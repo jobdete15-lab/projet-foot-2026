@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FM Logistique 2026</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 10px; }
+        .terrain { background: #2e7d32; border: 3px solid white; border-radius: 15px; padding: 15px; max-width: 400px; margin: auto; }
+        .zone { margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+        h2 { font-size: 1rem; margin: 10px 0; }
+        .obj { background: white; color: black; border: none; padding: 12px; margin: 5px 0; width: 100%; border-radius: 25px; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
+        /* Couleurs au clic */
+        .bleu.active { background: #0091ea !important; color: white; box-shadow: 0 0 10px #0091ea; }
+        .vert.active { background: #4caf50 !important; color: white; box-shadow: 0 0 10px #4caf50; }
+        .rose.active { background: #e91e63 !important; color: white; box-shadow: 0 0 10px #e91e63; }
+    </style>
+</head>
+<body>
+    <h1>🏆 FM Logistique 2026</h1>
+    <div class="terrain">
+        <div class="zone">
+            <h2 style="color: #4fc3f7;">🔵 DÉFENSE (People)</h2>
+            <button class="obj bleu" onclick="this.classList.toggle('active')">Plan Formation</button>
+            <button class="obj bleu" onclick="this.classList.toggle('active')">Parité H/F</button>
+            <button class="obj bleu" onclick="this.classList.toggle('active')">Mentorat</button>
+        </div>
+        <div class="zone">
+            <h2 style="color: #81c784;">🟢 MILIEU (Environnement)</h2>
+            <button class="obj vert" onclick="this.classList.toggle('active')">Bilan Carbone -20%</button>
+            <button class="obj vert" onclick="this.classList.toggle('active')">Camions Électriques</button>
+            <button class="obj vert" onclick="this.classList.toggle('active')">Zéro Plastique</button>
+        </div>
+        <div class="zone">
+            <h2 style="color: #f48fb1;">🌸 ATTAQUE (Vivre Ensemble)</h2>
+            <button class="obj rose" onclick="this.classList.toggle('active')">Objectif Zéro Accident</button>
+            <button class="obj rose" onclick="this.classList.toggle('active')">Tournoi Sportif</button>
+            <button class="obj rose" onclick="this.classList.toggle('active')">Inclusion & Respect</button>
+        </div>
+    </div>
+    <p>Appuie sur un joueur pour marquer un point !</p>
+</body>
+</html>
