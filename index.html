@@ -98,5 +98,226 @@
         .feedback {
             position: absolute; top: -35px; color: white; font-weight: 900; font-size: 1rem; text-transform: uppercase;
             animation: floatUp 1.2s forwards; background: rgba(0,0,0,0.9); padding: 6px 12px; border-radius: 6px; pointer-events: none;
-            border: 1px solid
+            border: 1px solid rgba(255,255,255,0.3); white-space: nowrap; z-index: 20;
+        }
+        @keyframes floatUp { 0% { opacity: 0; transform: translateY(0) scale(0.8); } 20% { opacity: 1; transform: translateY(-20px) scale(1.1); } 100% { opacity: 0; transform: translateY(-60px) scale(1); } }
+        
+        .reset-btn { position: fixed; bottom: 20px; right: 20px; background: rgba(255,0,0,0.15); border: 1px solid red; color: red; padding: 12px 20px; font-size: 0.9rem; border-radius: 8px; cursor: pointer; z-index: 100; font-weight: bold; transition: 0.3s; }
+        .reset-btn:hover { background: red; color: white; }
+        canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+    </style>
+</head>
+<body>
 
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="color:var(--vert); margin-top:0; font-size: 2rem;">FM ARENA 2026</h2>
+            <p style="font-size:1rem; color:#aaa;">Connexion Admin</p>
+            <input type="text" id="user" placeholder="Identifiant (admin)">
+            <input type="password" id="pass" placeholder="Mot de passe">
+            <button class="btn-login" onclick="checkLogin()">Entrer sur le terrain</button>
+            <p id="error" style="color:#ff4444; font-size:1rem; margin-top:20px; font-weight:bold;"></p>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>OBJECTIF 2026</h1>
+        <div class="maillot-container">
+            <div class="jersey">
+                <svg class="jersey-svg" viewBox="0 0 100 100">
+                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#00d2ff" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                    <text x="50" y="60" font-size="22" text-anchor="middle" fill="white">👥</text>
+                </svg>
+                <span style="color:var(--bleu)">PEOPLE</span>
+            </div>
+            <div class="jersey">
+                <svg class="jersey-svg" viewBox="0 0 100 100">
+                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#39ff14" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                    <text x="50" y="60" font-size="22" text-anchor="middle" fill="black">🌱</text>
+                </svg>
+                <span style="color:var(--vert)">ENVIRON.</span>
+            </div>
+            <div class="jersey">
+                <svg class="jersey-svg" viewBox="0 0 100 100">
+                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#ff007f" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                    <text x="50" y="60" font-size="22" text-anchor="middle" fill="white">🤝</text>
+                </svg>
+                <span style="color:var(--rose)">VIVRE</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stade-container">
+        <div class="stade" id="arena">
+            <div class="surface surface-left"></div>
+            <div class="mid-line"></div>
+            <div class="center-circle"></div>
+            <div class="center-dot"></div>
+            <div class="surface surface-right"></div>
+            
+            <svg id="svg-lines" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;"></svg>
+            
+            <div id="game-content">
+                <div class="colonne" id="col-defense"></div>
+                <div class="colonne" id="col-milieu"></div>
+                <div class="colonne" id="col-attaque"></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetApp()">RÉINITIALISER LE TERRAIN</button>
+    <canvas id="confetti"></canvas>
+
+    <script>
+        const objectives = [
+            { id: 1, label: "Formation", zone: "bleu", col: "col-defense" },
+            { id: 2, label: "Parité H/F", zone: "bleu", col: "col-defense" },
+            { id: 3, label: "Mentorat", zone: "bleu", col: "col-defense" },
+            { id: 4, label: "Carbone -20%", zone: "vert", col: "col-milieu" },
+            { id: 5, label: "Électrique", zone: "vert", col: "col-milieu" },
+            { id: 6, label: "Zéro Déchet", zone: "vert", col: "col-milieu" },
+            { id: 7, label: "Zéro Accident", zone: "rose", col: "col-attaque" },
+            { id: 8, label: "Tournoi Sportif", zone: "rose", col: "col-attaque" },
+            { id: 9, label: "Inclusion", zone: "rose", col: "col-attaque" }
+        ];
+
+        let state = JSON.parse(localStorage.getItem('fm_pc_sphere')) || [];
+        const audioTing = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        const audioVictoire = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
+
+        function checkLogin() {
+            const u = document.getElementById('user').value.trim().toLowerCase();
+            const p = document.getElementById('pass').value.trim().toLowerCase();
+            
+            if(u === 'admin' && p === 'admin') {
+                document.getElementById('login-screen').style.display = 'none';
+                localStorage.setItem('logged_in_pc_sphere', 'yes');
+                init();
+            } else { 
+                document.getElementById('error').innerText = "Identifiant ou mot de passe incorrect."; 
+            }
+        }
+
+        if(localStorage.getItem('logged_in_pc_sphere') === 'yes') {
+            document.getElementById('login-screen').style.display = 'none';
+            init();
+        }
+
+        function init() {
+            document.getElementById('col-defense').innerHTML = '';
+            document.getElementById('col-milieu').innerHTML = '';
+            document.getElementById('col-attaque').innerHTML = '';
+
+            objectives.forEach(obj => {
+                const active = state.includes(obj.id);
+                const row = document.createElement('div');
+                row.className = `obj-row ${obj.zone} ${active ? 'active' : ''}`;
+                row.dataset.id = obj.id;
+                
+                // Le texte est maintenant directement DANS la div du ballon
+                row.innerHTML = `<div class="ball-3d">${obj.label}</div>`;
+                row.onclick = () => activate(obj.id, row);
+                
+                document.getElementById(obj.col).appendChild(row);
+            });
+            
+            setTimeout(drawLines, 100); 
+            if(state.length === objectives.length) document.getElementById('arena').classList.add('victory');
+        }
+
+        function activate(id, el) {
+            if (state.includes(id)) return;
+            state.push(id);
+            el.classList.add('active');
+            localStorage.setItem('fm_pc_sphere', JSON.stringify(state));
+            
+            audioTing.currentTime = 0;
+            audioTing.play().catch(e => {}); 
+            
+            showFeedback(el);
+            drawLines();
+
+            if(state.length === objectives.length) {
+                document.getElementById('arena').classList.add('victory');
+                audioVictoire.play().catch(e => {});
+                launchConfetti();
+            }
+        }
+
+        function showFeedback(el) {
+            const words = ["Excellent !", "Continuez comme ça !", "Super passe !", "Parfait !", "Bien joué !"];
+            const f = document.createElement('div');
+            f.className = 'feedback';
+            f.innerText = words[Math.floor(Math.random() * words.length)];
+            el.appendChild(f);
+            setTimeout(() => f.remove(), 1200);
+        }
+
+        function drawLines() {
+            const svg = document.getElementById('svg-lines');
+            svg.innerHTML = '';
+            for(let i=0; i < state.length - 1; i++) {
+                const b1 = document.querySelector(`[data-id="${state[i]}"] .ball-3d`).getBoundingClientRect();
+                const b2 = document.querySelector(`[data-id="${state[i+1]}"] .ball-3d`).getBoundingClientRect();
+                const rT = document.getElementById('arena').getBoundingClientRect();
+                
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", b1.left - rT.left + (b1.width/2)); 
+                line.setAttribute("y1", b1.top - rT.top + (b1.height/2));
+                line.setAttribute("x2", b2.left - rT.left + (b2.width/2)); 
+                line.setAttribute("y2", b2.top - rT.top + (b2.height/2));
+                
+                line.setAttribute("stroke", "rgba(255,255,255,0.7)"); 
+                line.setAttribute("stroke-width", "2.5");
+                line.setAttribute("stroke-dasharray", "6,6");
+                svg.appendChild(line);
+            }
+        }
+
+        window.addEventListener('resize', drawLines);
+
+        function launchConfetti() {
+            const canvas = document.getElementById('confetti');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let particles = [];
+            
+            for(let i=0; i<250; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    w: Math.random() * 12 + 6,
+                    h: Math.random() * 12 + 6,
+                    d: Math.random() * 10,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    tilt: Math.floor(Math.random() * 10) - 10
+                });
+            }
+            
+            function draw() {
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.rect(p.x, p.y, p.w, p.h);
+                    ctx.fill();
+                    p.y += Math.cos(p.d) + 2 + p.w/4;
+                    p.x += Math.sin(0);
+                    if(p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+            setTimeout(() => { canvas.style.display = 'none'; }, 8000);
+        }
+
+        function resetApp() { 
+            if(confirm("Réinitialiser l'avancement du projet 2026 ?")) { 
+                localStorage.removeItem('fm_pc_sphere'); 
+                location.reload(); 
+            } 
+        }
+    </script>
+</body>
+</html>
