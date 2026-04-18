@@ -3,41 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Logistique 2026</title>
+    <title>FM Logistique 2026 - Arena</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 10px; }
-        .terrain { background: #2e7d32; border: 3px solid white; border-radius: 15px; padding: 15px; max-width: 400px; margin: auto; }
-        .zone { margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
-        h2 { font-size: 1rem; margin: 10px 0; }
-        .obj { background: white; color: black; border: none; padding: 12px; margin: 5px 0; width: 100%; border-radius: 25px; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
-        /* Couleurs au clic */
-        .bleu.active { background: #0091ea !important; color: white; box-shadow: 0 0 10px #0091ea; }
-        .vert.active { background: #4caf50 !important; color: white; box-shadow: 0 0 10px #4caf50; }
-        .rose.active { background: #e91e63 !important; color: white; box-shadow: 0 0 10px #e91e63; }
+        /* === FOND GLOBAL === */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #050505; /* Noir profond */
+            color: white;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { font-size: 1.5rem; text-align: center; color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.5); margin-bottom: 5px; }
+        p.intro { color: #888; font-size: 0.9rem; text-align: center; margin-bottom: 20px; }
+
+        /* === LE STADE ARENA === */
+        .stade {
+            position: relative;
+            background: linear-gradient(to bottom, #0a1c10, #040d07); /* Vert très sombre */
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px 15px;
+            box-sizing: border-box;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8) inset;
+        }
+
+        /* Lignes du terrain */
+        .stade::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(255, 255, 255, 0.3); }
+        .stade::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; }
+        .cage-haut { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 30px; border: 2px solid rgba(255, 255, 255, 0.3); border-top: none; }
+        .cage-bas { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 30px; border: 2px solid rgba(255, 255, 255, 0.3); border-bottom: none; }
+
+        /* === LES OBJECTIFS (LIGNES ZIGZAG) === */
+        .zone-titre {
+            text-align: center; font-size: 1rem; margin: 25px 0 15px 0; position: relative; z-index: 2; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+        
+        .objectif-row {
+            display: flex; align-items: center; margin-bottom: 20px; position: relative; z-index: 2; cursor: pointer;
+        }
+        
+        /* ZigZag : 1 fois sur 2, le ballon est à droite */
+        .objectif-row:nth-child(even) { flex-direction: row-reverse; text-align: right; }
+
+        /* === LES BALLONS (POINTS Ronds) === */
+        .ballon {
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            background-color: #111; /* Éteint */
+            border: 2px solid #444; /* Éteint */
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; color: #555;
+            transition: all 0.4s ease;
+            flex-shrink: 0;
+        }
+        .objectif-row:nth-child(odd) .ballon { margin-right: 15px; }
+        .objectif-row:nth-child(even) .ballon { margin-left: 15px; }
+
+        /* Le Texte */
+        .texte { font-size: 0.9rem; color: #666; transition: all 0.4s ease; font-weight: bold; }
+
+        /* === EFFETS NÉONS (QUAND ALLUMÉ) === */
+        /* Bleu - Défense */
+        .ballon.active.bleu { background: #00f3ff; border-color: #ffffff; box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff; color: #000; transform: scale(1.1); }
+        .texte.active.bleu { color: #00f3ff; text-shadow: 0 0 8px rgba(0, 243, 255, 0.8); }
+
+        /* Vert - Milieu */
+        .ballon.active.vert { background: #39ff14; border-color: #ffffff; box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14; color: #000; transform: scale(1.1); }
+        .texte.active.vert { color: #39ff14; text-shadow: 0 0 8px rgba(57, 255, 20, 0.8); }
+
+        /* Rose - Attaque */
+        .ballon.active.rose { background: #ff007f; border-color: #ffffff; box-shadow: 0 0 20px #ff007f, 0 0 40px #ff007f; color: #000; transform: scale(1.1); }
+        .texte.active.rose { color: #ff007f; text-shadow: 0 0 8px rgba(255, 0, 127, 0.8); }
     </style>
 </head>
 <body>
-    <h1>🏆 FM Logistique 2026</h1>
-    <div class="terrain">
-        <div class="zone">
-            <h2 style="color: #4fc3f7;">🔵 DÉFENSE (People)</h2>
-            <button class="obj bleu" onclick="this.classList.toggle('active')">Plan Formation</button>
-            <button class="obj bleu" onclick="this.classList.toggle('active')">Parité H/F</button>
-            <button class="obj bleu" onclick="this.classList.toggle('active')">Mentorat</button>
+
+    <h1>🏆 Objectif 2026</h1>
+    <p class="intro">Appuie sur les points pour tracer tes passes lumineuses !</p>
+
+    <div class="stade" id="terrain">
+        <div class="cage-haut"></div>
+        <div class="cage-bas"></div>
+
+        <svg id="calque-fleches" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;">
+            <defs>
+                <marker id="fleche-bleu" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                    <path d="M0,0 L0,8 L8,4 z" fill="#00f3ff" />
+                </marker>
+                <marker id="fleche-vert" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                    <path d="M0,0 L0,8 L8,4 z" fill="#39ff14" />
+                </marker>
+                <marker id="fleche-rose" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                    <path d="M0,0 L0,8 L8,4 z" fill="#ff007f" />
+                </marker>
+            </defs>
+        </svg>
+
+        <h3 class="zone-titre" style="color: #00f3ff;">Défense (People)</h3>
+        <div class="objectif-row" onclick="allumer(this, 'bleu')">
+            <div class="ballon bleu">1</div><div class="texte bleu">Plan de formation</div>
         </div>
-        <div class="zone">
-            <h2 style="color: #81c784;">🟢 MILIEU (Environnement)</h2>
-            <button class="obj vert" onclick="this.classList.toggle('active')">Bilan Carbone -20%</button>
-            <button class="obj vert" onclick="this.classList.toggle('active')">Camions Électriques</button>
-            <button class="obj vert" onclick="this.classList.toggle('active')">Zéro Plastique</button>
+        <div class="objectif-row" onclick="allumer(this, 'bleu')">
+            <div class="ballon bleu">2</div><div class="texte bleu">Parité Homme/Femme</div>
         </div>
-        <div class="zone">
-            <h2 style="color: #f48fb1;">🌸 ATTAQUE (Vivre Ensemble)</h2>
-            <button class="obj rose" onclick="this.classList.toggle('active')">Objectif Zéro Accident</button>
-            <button class="obj rose" onclick="this.classList.toggle('active')">Tournoi Sportif</button>
-            <button class="obj rose" onclick="this.classList.toggle('active')">Inclusion & Respect</button>
+        <div class="objectif-row" onclick="allumer(this, 'bleu')">
+            <div class="ballon bleu">3</div><div class="texte bleu">Mentorat interne</div>
         </div>
+
+        <h3 class="zone-titre" style="color: #39ff14;">Milieu (Environnement)</h3>
+        <div class="objectif-row" onclick="allumer(this, 'vert')">
+            <div class="ballon vert">4</div><div class="texte vert">Bilan carbone -20%</div>
+        </div>
+        <div class="objectif-row" onclick="allumer(this, 'vert')">
+            <div class="ballon vert">5</div><div class="texte vert">Camions électriques</div>
+        </div>
+        <div class="objectif-row" onclick="allumer(this, 'vert')">
+            <div class="ballon vert">6</div><div class="texte vert">Zéro plastique</div>
+        </div>
+
+        <h3 class="zone-titre" style="color: #ff007f;">Attaque (Vivre Ensemble)</h3>
+        <div class="objectif-row" onclick="allumer(this, 'rose')">
+            <div class="ballon rose">7</div><div class="texte rose">Zéro Accident</div>
+        </div>
+        <div class="objectif-row" onclick="allumer(this, 'rose')">
+            <div class="ballon rose">8</div><div class="texte rose">Tournoi Sportif</div>
+        </div>
+        <div class="objectif-row" onclick="allumer(this, 'rose')">
+            <div class="ballon rose">9</div><div class="texte rose">Inclusion & Respect</div>
+        </div>
+
     </div>
-    <p>Appuie sur un joueur pour marquer un point !</p>
+
+    <script>
+        let ballonPrecedent = null;
+
+        function allumer(elementLigne, couleur) {
+            let ballon = elementLigne.querySelector('.ballon');
+            let texte = elementLigne.querySelector('.texte');
+
+            // Si déjà allumé, on ne fait rien
+            if (ballon.classList.contains('active')) return;
+
+            // Allume le ballon et le texte (ajoute la classe active)
+            ballon.classList.add('active');
+            texte.classList.add('active');
+
+            // Dessine la flèche si un ballon a été cliqué avant
+            if (ballonPrecedent) {
+                dessinerFleche(ballonPrecedent, ballon, couleur);
+            }
+            
+            // Enregistre ce ballon comme point de départ pour la prochaine flèche
+            ballonPrecedent = ballon;
+        }
+
+        function dessinerFleche(depart, arrivee, couleurClass) {
+            let svg = document.getElementById('calque-fleches');
+            let terrain = document.getElementById('terrain');
+
+            // Calcule la position exacte des ballons sur le terrain
+            let rectDepart = depart.getBoundingClientRect();
+            let rectArrivee = arrivee.getBoundingClientRect();
+            let rectTerrain = terrain.getBoundingClientRect();
+
+            let x1 = rectDepart.left - rectTerrain.left + (rectDepart.width / 2);
+            let y1 = rectDepart.top - rectTerrain.top + (rectDepart.height / 2);
+            let x2 = rectArrivee.left - rectTerrain.left + (rectArrivee.width / 2);
+            let y2 = rectArrivee.top - rectTerrain.top + (rectArrivee.height / 2);
+
+            // Création de la ligne SVG
+            let ligne = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            ligne.setAttribute('x1', x1);
+            ligne.setAttribute('y1', y1);
+            ligne.setAttribute('x2', x2);
+            ligne.setAttribute('y2', y2);
+
+            // Choix de la couleur néon pour la ligne
+            let codeCouleur = '#ffffff';
+            if(couleurClass === 'bleu') codeCouleur = '#00f3ff';
+            if(couleurClass === 'vert') codeCouleur = '#39ff14';
+            if(couleurClass === 'rose') codeCouleur = '#ff007f';
+
+            ligne.setAttribute('stroke', codeCouleur);
+            ligne.setAttribute('stroke-width', '3');
+            ligne.setAttribute('stroke-dasharray', '5,5'); /* Ligne pointillée dynamique */
+            
+            // Ajout de la pointe de la flèche
+            ligne.setAttribute('marker-end', `url(#fleche-${couleurClass})`);
+
+            svg.appendChild(ligne);
+        }
+    </script>
 </body>
 </html>
