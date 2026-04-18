@@ -3,188 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Logistique - Arena Pro 2026</title>
+    <title>FM Logistique - Objectif 2026</title>
     <style>
         :root {
-            --bleu: #00d2ff; --vert: #39ff14; --rose: #ff007f;
-            --pelouse: #0a2412; --ligne: rgba(255,255,255,0.2);
+            --bleu: #00d2ff; --vert: #a8ff14; --rose: #ff007f;
+            --pelouse1: #4caf50; --pelouse2: #43a047;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: #020503; color: white; margin: 0; padding-bottom: 60px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; padding-bottom: 60px; overflow-x: hidden; }
 
-        /* === CONNEXION ADMIN (PLUS SOUPLE) === */
+        /* === CONNEXION === */
         #login-screen {
-            position: fixed; inset: 0; background: radial-gradient(circle, #111 0%, #000 100%); z-index: 1000;
+            position: fixed; inset: 0; background: #111; z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .login-box { 
-            background: rgba(20, 20, 20, 0.9); padding: 40px; border-radius: 20px; 
-            border: 1px solid var(--vert); text-align: center; backdrop-filter: blur(10px); width: 80%;
+            background: #222; padding: 40px; border-radius: 15px; 
+            border: 2px solid white; text-align: center; width: 80%; max-width: 300px;
         }
         input { 
-            display: block; margin: 15px auto; padding: 15px; border-radius: 8px; border: 1px solid #333; 
-            width: 100%; max-width: 250px; background: #000; color: white; text-align: center; font-size: 1rem; 
+            display: block; margin: 15px auto; padding: 15px; border-radius: 8px; border: none; 
+            width: 100%; box-sizing: border-box; text-align: center; font-size: 1.2rem; font-weight: bold;
         }
         .btn-login { 
-            background: var(--vert); color: #000; font-weight: bold; padding: 14px 30px; 
-            border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; max-width: 250px;
+            background: var(--pelouse1); color: white; font-weight: bold; padding: 15px 30px; 
+            border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%;
+            font-size: 1.1rem; margin-top: 10px;
         }
 
-        /* === LE STADE ARENA PRO === */
-        .header { text-align: center; padding: 25px 10px; }
-        .maillot-container { display: flex; justify-content: center; gap: 15px; }
-        .jersey { width: 60px; display: flex; flex-direction: column; align-items: center; }
-        .jersey-svg { width: 50px; }
-
-        .stade {
-            position: relative; width: 92%; max-width: 450px; margin: auto;
-            background: repeating-linear-gradient(0deg, #0a2412 0px, #0a2412 40px, #0d2d16 40px, #0d2d16 80px);
-            border: 3px solid #333; border-radius: 10px; padding: 50px 10px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
-        .mid-line { position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--ligne); }
-        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border: 1px solid var(--ligne); border-radius: 50%; }
-
-        .obj-row { display: flex; align-items: center; margin: 35px 0; cursor: pointer; position: relative; z-index: 10; }
-        .obj-row:nth-child(even) { flex-direction: row-reverse; text-align: right; }
-
-        .ball-3d {
-            width: 45px; height: 45px; background: radial-gradient(circle at 30% 30%, #555, #111);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: 0.5s;
-        }
-        .active.bleu .ball-3d { background: radial-gradient(circle at 30% 30%, #80eaff, var(--bleu)); box-shadow: 0 0 20px var(--bleu); }
-        .active.vert .ball-3d { background: radial-gradient(circle at 30% 30%, #afff9d, var(--vert)); box-shadow: 0 0 20px var(--vert); }
-        .active.rose .ball-3d { background: radial-gradient(circle at 30% 30%, #ff80bf, var(--rose)); box-shadow: 0 0 20px var(--rose); }
-
-        .label { margin: 0 15px; font-weight: 600; font-size: 0.9rem; color: #666; transition: 0.4s; }
-        .active .label { color: white; }
-
-        .feedback { position: absolute; color: white; font-weight: bold; font-size: 0.8rem; animation: floatUp 1s forwards; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; }
-        @keyframes floatUp { 0% { opacity: 0; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
-        
-        .reset-btn { position: fixed; bottom: 10px; left: 10px; background: none; border: 1px solid #444; color: #444; padding: 5px; font-size: 0.6rem; border-radius: 5px; }
-    </style>
-</head>
-<body>
-
-    <div id="login-screen">
-        <div class="login-box">
-            <h2 style="color:var(--vert)">FM ARENA 2026</h2>
-            <input type="text" id="user" placeholder="Login (admin)">
-            <input type="password" id="pass" placeholder="Mot de passe">
-            <button class="btn-login" onclick="checkLogin()">Entrer sur le terrain</button>
-            <p id="error" style="color:#ff4444; font-size:0.8rem; margin-top:10px;"></p>
-        </div>
-    </div>
-
-    <div class="header">
-        <h1>OBJECTIF 2026</h1>
-        <div class="maillot-container">
-            <div class="jersey">
-                <svg viewBox="0 0 100 100"><path d="M20 30 L35 15 L50 25 L65 15 L80 30 L80 85 L20 85 Z" fill="#00d2ff"/><text x="35" y="60" font-size="20">👥</text></svg>
-                <span style="color:var(--bleu)">PEOPLE</span>
-            </div>
-            <div class="jersey">
-                <svg viewBox="0 0 100 100"><path d="M20 30 L35 15 L50 25 L65 15 L80 30 L80 85 L20 85 Z" fill="#39ff14"/><text x="35" y="60" font-size="20">🌱</text></svg>
-                <span style="color:var(--vert)">ENVIRON.</span>
-            </div>
-            <div class="jersey">
-                <svg viewBox="0 0 100 100"><path d="M20 30 L35 15 L50 25 L65 15 L80 30 L80 85 L20 85 Z" fill="#ff007f"/><text x="35" y="60" font-size="20">🤝</text></svg>
-                <span style="color:var(--rose)">VIVRE</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="stade" id="arena">
-        <div class="mid-line"></div>
-        <div class="center-circle"></div>
-        <svg id="svg-lines" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;"></svg>
-        <div id="game-content"></div>
-    </div>
-
-    <button class="reset-btn" onclick="resetApp()">Réinitialiser</button>
-
-    <script>
-        const objectives = [
-            { id: 1, label: "Formation", zone: "bleu" },
-            { id: 2, label: "Parité H/F", zone: "bleu" },
-            { id: 3, label: "Mentorat", zone: "bleu" },
-            { id: 4, label: "Carbone -20%", zone: "vert" },
-            { id: 5, label: "Électrique", zone: "vert" },
-            { id: 6, label: "Zéro Déchet", zone: "vert" },
-            { id: 7, label: "Zéro Accident", zone: "rose" },
-            { id: 8, label: "Sport", zone: "rose" },
-            { id: 9, label: "Inclusion", zone: "rose" }
-        ];
-
-        let state = JSON.parse(localStorage.getItem('fm_v3_state')) || [];
-        const audioTing = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-
-        function checkLogin() {
-            // .trim() enlève les espaces / .toLowerCase() enlève les majuscules
-            const u = document.getElementById('user').value.trim().toLowerCase();
-            const p = document.getElementById('pass').value.trim().toLowerCase();
-            
-            if(u === 'admin' && p === 'admin') {
-                document.getElementById('login-screen').style.display = 'none';
-                init();
-            } else { 
-                document.getElementById('error').innerText = "Vérifie l'écriture de 'admin'."; 
-            }
-        }
-
-        function init() {
-            const container = document.getElementById('game-content');
-            container.innerHTML = '';
-            objectives.forEach(obj => {
-                const active = state.includes(obj.id);
-                const row = document.createElement('div');
-                row.className = `obj-row ${obj.zone} ${active ? 'active' : ''}`;
-                row.dataset.id = obj.id;
-                row.innerHTML = `<div class="ball-3d">⚽</div><div class="label">${obj.label}</div>`;
-                row.onclick = () => activate(obj.id, row);
-                container.appendChild(row);
-            });
-            drawLines();
-        }
-
-        function activate(id, el) {
-            if (state.includes(id)) return;
-            state.push(id);
-            el.classList.add('active');
-            localStorage.setItem('fm_v3_state', JSON.stringify(state));
-            audioTing.play().catch(e => {});
-            showFeedback(el);
-            drawLines();
-        }
-
-        function showFeedback(el) {
-            const f = document.createElement('div');
-            f.className = 'feedback';
-            f.innerText = "Bien joué ! ⚽";
-            el.appendChild(f);
-            setTimeout(() => f.remove(), 1000);
-        }
-
-        function drawLines() {
-            const svg = document.getElementById('svg-lines');
-            svg.innerHTML = '';
-            for(let i=0; i < state.length - 1; i++) {
-                const b1 = document.querySelector(`[data-id="${state[i]}"] .ball-3d`).getBoundingClientRect();
-                const b2 = document.querySelector(`[data-id="${state[i+1]}"] .ball-3d`).getBoundingClientRect();
-                const rT = document.getElementById('arena').getBoundingClientRect();
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", b1.left - rT.left + 22); line.setAttribute("y1", b1.top - rT.top + 22);
-                line.setAttribute("x2", b2.left - rT.left + 22); line.setAttribute("y2", b2.top - rT.top + 22);
-                line.setAttribute("stroke", "rgba(255,255,255,0.4)"); line.setAttribute("stroke-width", "1");
-                svg.appendChild(line);
-            }
-        }
-
-        function resetApp() { if(confirm("Réinitialiser ?")) { localStorage.clear(); location.reload(); } }
-        
-        // Si déjà connecté auparavant, on saute l'écran
-        if(localStorage.getItem('logged') === 'true') { document.getElementById('login-screen').style.display = 'none'; init(); }
-    </script>
-</body>
-</html>
+        /* === EN-TÊTE & MAILLOTS === */
+        .header { text-align: center; padding: 20px 10px; }
+        h1 { margin: 0 0 15px 0; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .maillot-container { display: flex; justify-content: center; gap: 20px; }
+        .jersey { width: 65px; display: flex; flex-direction: column; align-items: center; }
+        .jersey-svg { width: 55
 
