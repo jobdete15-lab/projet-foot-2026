@@ -30,10 +30,11 @@
         .point-rouge { width: 10px; height: 10px; background: red; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px red; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        .maillot-container { display: flex; justify-content: center; gap: 30px; }
+        .maillot-container { display: flex; justify-content: center; gap: 40px; }
         .jersey { display: flex; flex-direction: column; align-items: center; }
-        .jersey-svg { width: 60px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); }
-        .jersey span { font-size: 0.8rem; font-weight: 800; margin-top: 5px; color: white; opacity: 0.9; }
+        .jersey-svg { width: 65px; filter: drop-shadow(0 8px 6px rgba(0,0,0,0.7)); transition: transform 0.3s; }
+        .jersey:hover .jersey-svg { transform: translateY(-5px); }
+        .jersey span { font-size: 0.85rem; font-weight: 800; margin-top: 8px; color: white; opacity: 0.9; }
 
         /* === LE STADE (HORIZONTAL AVEC CAGES) === */
         .stade-container { width: 95%; max-width: 1000px; margin: 20px auto; }
@@ -158,22 +159,28 @@
         <div class="maillot-container">
             <div class="jersey">
                 <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#00d2ff"/>
-                    <text x="50" y="60" font-size="25" text-anchor="middle" fill="white">👥</text>
+                    <path d="M 28 15 C 35 15 42 24 50 24 C 58 24 65 15 72 15 C 80 15 92 28 92 28 C 92 28 85 41 80 38 L 78 88 C 60 92 40 92 22 88 L 20 38 C 15 41 8 28 8 28 C 8 28 20 15 28 15 Z" fill="#00d2ff" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                    <path d="M 38 15 C 42 22 58 22 62 15 C 55 18 45 18 38 15 Z" fill="rgba(0,0,0,0.4)"/>
+                    <path d="M 28 15 L 20 38 M 72 15 L 80 38" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
+                    <text x="50" y="62" font-size="28" text-anchor="middle" fill="white">👥</text>
                 </svg>
                 <span style="color:var(--bleu)">PEOPLE</span>
             </div>
             <div class="jersey">
                 <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#39ff14"/>
-                    <text x="50" y="60" font-size="25" text-anchor="middle" fill="black">🌍</text>
+                    <path d="M 28 15 C 35 15 42 24 50 24 C 58 24 65 15 72 15 C 80 15 92 28 92 28 C 92 28 85 41 80 38 L 78 88 C 60 92 40 92 22 88 L 20 38 C 15 41 8 28 8 28 C 8 28 20 15 28 15 Z" fill="#39ff14" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                    <path d="M 38 15 C 42 22 58 22 62 15 C 55 18 45 18 38 15 Z" fill="rgba(0,0,0,0.4)"/>
+                    <path d="M 28 15 L 20 38 M 72 15 L 80 38" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
+                    <text x="50" y="62" font-size="28" text-anchor="middle" fill="black">🌍</text>
                 </svg>
                 <span style="color:var(--vert)">ENVIRON.</span>
             </div>
             <div class="jersey">
                 <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#ff007f"/>
-                    <text x="50" y="60" font-size="25" text-anchor="middle" fill="white">🤝</text>
+                    <path d="M 28 15 C 35 15 42 24 50 24 C 58 24 65 15 72 15 C 80 15 92 28 92 28 C 92 28 85 41 80 38 L 78 88 C 60 92 40 92 22 88 L 20 38 C 15 41 8 28 8 28 C 8 28 20 15 28 15 Z" fill="#ff007f" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                    <path d="M 38 15 C 42 22 58 22 62 15 C 55 18 45 18 38 15 Z" fill="rgba(0,0,0,0.4)"/>
+                    <path d="M 28 15 L 20 38 M 72 15 L 80 38" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
+                    <text x="50" y="62" font-size="28" text-anchor="middle" fill="white">🤝</text>
                 </svg>
                 <span style="color:var(--rose)">VIVRE</span>
             </div>
@@ -230,9 +237,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // === AUDIOS (Nouveaux sons plus gratifiants) ===
-        const sonValidation = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'); // Son "Bling" de victoire
-        const sonVictoire = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'); // Musique finale
+        // === AUDIOS ===
+        // Son quand la passe voyage (déplacement d'air)
+        const sonPasse = new Audio('https://assets.mixkit.co/active_storage/sfx/2143/2143-preview.mp3'); 
+        // Son quand le ballon s'allume ("Bling" gratifiant)
+        const sonValidation = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'); 
+        // Musique des confettis
+        const sonVictoire = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'); 
 
         const objectives = [
             { id: 1, label: "Formation", zone: "bleu", col: "col-defense" },
@@ -267,7 +278,7 @@
                 document.getElementById(obj.col).appendChild(row);
             });
 
-            // Écoute des ballons
+            // Écoute des ballons pour les allumer
             db.ref('fm_2026_objectifs').on('value', (snapshot) => {
                 const data = snapshot.val();
                 state = []; 
@@ -278,7 +289,7 @@
                     const sorted = Object.keys(data).map(k => ({ id: parseInt(k), time: data[k].timestamp })).sort((a,b) => a.time - b.time);
                     sorted.forEach(item => {
                         state.push(item.id);
-                        document.getElementById(`ballon-${item.id}`).classList.add('active');
+                        document.getElementById(`ballon-${item.id}`).classList.add('active'); // S'allume ici
                     });
                 }
                 drawLines();
@@ -302,7 +313,6 @@
                 if(data) {
                     const msgs = Object.values(data).sort((a,b) => a.time - b.time);
                     msgs.forEach(m => {
-                        // Création de la ligne de chat avec la couleur spécifique au prénom
                         const c = genererCouleurPrenom(m.name);
                         box.innerHTML += `<div class="msg-line"><span class="msg-name" style="color:${c}">${m.name} :</span><span style="color:#ddd">${m.text}</span></div>`;
                     });
@@ -313,7 +323,6 @@
             });
         }
 
-        // Génère une couleur toujours identique pour un même prénom
         function genererCouleurPrenom(nom) {
             let hash = 0;
             for (let i = 0; i < nom.length; i++) { hash = nom.charCodeAt(i) + ((hash << 5) - hash); }
@@ -336,18 +345,23 @@
 
         function confirmerValidation() {
             if(ballonEnAttente) {
-                // Animation de la Passe ⚽
-                if (state.length > 0) {
-                    animerPasse(state[state.length - 1], ballonEnAttente);
-                } else {
-                    validerOfficiellement(); // S'il n'y a pas de ballon précédent, on valide direct
-                }
+                const idCible = ballonEnAttente; // On sauvegarde la cible avant de fermer
                 fermerPopup();
+                
+                if (state.length > 0) {
+                    animerPasse(state[state.length - 1], idCible);
+                } else {
+                    validerOfficiellement(idCible);
+                }
             }
         }
 
         // Fait voler un ballon d'un point A à un point B
         function animerPasse(idDepart, idArrivee) {
+            // Son de la passe qui vole
+            sonPasse.currentTime = 0;
+            sonPasse.play().catch(e=>{});
+
             const b1 = document.getElementById(`ballon-${idDepart}`).querySelector('.ball-3d').getBoundingClientRect();
             const b2 = document.getElementById(`ballon-${idArrivee}`).querySelector('.ball-3d').getBoundingClientRect();
             const arena = document.getElementById('arena').getBoundingClientRect();
@@ -363,33 +377,33 @@
             // Force le navigateur à dessiner la position de départ
             ballePasse.getBoundingClientRect();
 
-            // Déplace la balle vers la nouvelle cible en la faisant tourner
+            // Déplace la balle vers la nouvelle cible
             ballePasse.style.left = (b2.left - arena.left + b2.width/2 - 17) + 'px';
             ballePasse.style.top = (b2.top - arena.top + b2.height/2 - 17) + 'px';
             ballePasse.style.transform = 'rotate(1080deg)';
 
-            // Une fois l'animation finie (0.6s), on valide vraiment et on affiche les félicitations
+            // Une fois l'animation finie, on valide et on affiche le texte
             setTimeout(() => {
                 ballePasse.remove();
-                validerOfficiellement();
+                validerOfficiellement(idArrivee);
             }, 600);
         }
 
-        function validerOfficiellement() {
+        function validerOfficiellement(idCible) {
             // Affichage des Mots d'encouragement
             const mots = ["Excellent !", "Continuez comme ça !", "Beau travail !", "Super passe !", "Bravo !"];
             const f = document.createElement('div');
             f.className = 'feedback'; 
             f.innerText = mots[Math.floor(Math.random() * mots.length)];
-            document.getElementById(`ballon-${ballonEnAttente}`).appendChild(f);
+            document.getElementById(`ballon-${idCible}`).appendChild(f);
             setTimeout(() => f.remove(), 1200);
 
-            // Son de réussite
+            // Son de réussite (le ballon s'allume)
             sonValidation.currentTime = 0;
             sonValidation.play().catch(e=>{});
 
-            // Envoi de l'information à tous les ordinateurs connectés
-            db.ref('fm_2026_objectifs/' + ballonEnAttente).set({ timestamp: Date.now() });
+            // Envoi de l'information à Firebase (ce qui va l'allumer pour tout le monde)
+            db.ref('fm_2026_objectifs/' + idCible).set({ timestamp: Date.now() });
         }
 
         function annulerDerniereAction() {
@@ -412,7 +426,6 @@
             }
         }
 
-        // Permet d'envoyer le message avec la touche "Entrée"
         document.getElementById('input-text').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') envoyerMessage();
         });
