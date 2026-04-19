@@ -3,114 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Logistique - Arena Pro 2026</title>
+    <title>FM Logistique - Collaboratif</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
-        :root {
-            --bleu: #00d2ff; --vert: #39ff14; --rose: #ff007f;
-            --pelouse1: #0a2412; --pelouse2: #0d2d16; --ligne: rgba(255,255,255,0.3);
-        }
-
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #020503; color: white; margin: 0; padding-bottom: 60px; overflow-x: hidden; }
-
-        /* === ÉCRAN DE CONNEXION === */
-        #login-screen {
-            position: fixed; inset: 0; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .login-box { 
-            background: rgba(10, 10, 10, 0.9); padding: 40px 20px; border-radius: 15px; 
-            border: 1px solid var(--vert); text-align: center; box-shadow: 0 10px 30px rgba(57, 255, 20, 0.1); width: 85%; max-width: 350px;
-        }
-        input { 
-            display: block; margin: 15px auto; padding: 15px; border-radius: 8px; border: 1px solid #333; 
-            width: 90%; background: #000; color: white; text-align: center; font-size: 1rem; 
-        }
-        .btn-login { 
-            background: var(--vert); color: #000; font-weight: bold; padding: 15px 30px; margin-top: 10px;
-            border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 90%; font-size: 1rem;
-        }
-
-        /* === HEADER ET MAILLOTS PRO === */
-        .header { text-align: center; padding: 20px 10px; }
-        h1 { margin: 0 0 15px 0; font-size: 1.6rem; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        .maillot-container { display: flex; justify-content: center; gap: 20px; }
-        .jersey { display: flex; flex-direction: column; align-items: center; }
-        .jersey-svg { width: 55px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); }
-        .jersey span { font-size: 0.75rem; font-weight: 800; margin-top: 5px; color: white; opacity: 0.9; }
-
-        /* === LE STADE === */
-        .stade {
-            position: relative; width: 92%; max-width: 450px; margin: auto;
-            background: repeating-linear-gradient(0deg, var(--pelouse1) 0px, var(--pelouse1) 40px, var(--pelouse2) 40px, var(--pelouse2) 80px);
-            border: 2px solid #555; border-radius: 8px; padding: 50px 10px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.9) inset, 0 0 20px rgba(0,0,0,0.5); overflow: hidden; transition: 1s;
-        }
-        .stade.victory { box-shadow: 0 0 50px var(--vert), 0 15px 40px rgba(0,0,0,0.9) inset; border-color: var(--vert); }
-
-        /* Lignes du terrain */
-        .stade::before { content: ''; position: absolute; inset: 10px; border: 1px solid var(--ligne); pointer-events: none; }
-        .mid-line { position: absolute; top: 50%; left: 10px; right: 10px; height: 1px; background: var(--ligne); pointer-events: none; }
-        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; border: 1px solid var(--ligne); border-radius: 50%; pointer-events: none; }
-        .cage { position: absolute; left: 50%; transform: translateX(-50%); width: 120px; height: 25px; border: 2px solid white; background: rgba(255,255,255,0.05); pointer-events: none; }
-        .cage-top { top: 10px; border-top: none; }
-        .cage-bot { bottom: 10px; border-bottom: none; }
-
-        /* === BALLONS ET OBJECTIFS === */
-        .obj-row { display: flex; align-items: center; margin: 35px 0; cursor: pointer; position: relative; z-index: 10; }
-        .obj-row:nth-child(even) { flex-direction: row-reverse; text-align: right; }
-
-        /* Ballon sombre au départ */
-        .ball-3d {
-            width: 45px; height: 45px; background: radial-gradient(circle at 35% 35%, #666, #111);
-            border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: grayscale(1); border: 1px solid #444;
-        }
+        body { font-family: sans-serif; background: #111; color: white; text-align: center; padding: 20px; }
         
-        /* Ballons allumés */
-        .active .ball-3d { filter: grayscale(0); transform: scale(1.15) rotate(360deg); border: 1px solid white; }
-        .active.bleu .ball-3d { background: radial-gradient(circle at 35% 35%, #fff, var(--bleu)); box-shadow: 0 0 25px var(--bleu); }
-        .active.vert .ball-3d { background: radial-gradient(circle at 35% 35%, #fff, var(--vert)); box-shadow: 0 0 25px var(--vert); }
-        .active.rose .ball-3d { background: radial-gradient(circle at 35% 35%, #fff, var(--rose)); box-shadow: 0 0 25px var(--rose); }
+        /* Les Ballons */
+        .ballon { width: 80px; height: 80px; background: #444; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; margin: 10px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .ballon.active { background: #39ff14; color: black; box-shadow: 0 0 20px #39ff14; transform: scale(1.1); }
 
-        .label { margin: 0 15px; font-weight: 700; font-size: 0.85rem; color: #888; transition: 0.4s; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 5px; }
-        .active .label { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        /* Fenêtre de confirmation (Popup) */
+        #popup-confirm { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 30px; border: 2px solid #39ff14; border-radius: 10px; z-index: 100; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .btn { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; }
+        .btn-oui { background: #39ff14; color: black; }
+        .btn-non { background: #ff4444; color: white; }
 
-        /* Feedback texte (Good work) */
-        .feedback {
-            position: absolute; color: white; font-weight: 900; font-size: 0.8rem; text-transform: uppercase;
-            animation: floatUp 1.2s forwards; background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 5px; pointer-events: none;
-            border: 1px solid rgba(255,255,255,0.2); white-space: nowrap;
-        }
-        @keyframes floatUp { 0% { opacity: 0; transform: translateY(0) scale(0.8); } 20% { opacity: 1; transform: translateY(-20px) scale(1.1); } 100% { opacity: 0; transform: translateY(-50px) scale(1); } }
+        /* Zone de Notes */
+        .notes-section { margin-top: 50px; background: #222; padding: 20px; border-radius: 10px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        textarea { width: 100%; height: 80px; margin-bottom: 10px; background: #000; color: white; border: 1px solid #555; padding: 10px; }
         
-        .reset-btn { position: fixed; bottom: 15px; right: 15px; background: rgba(255,0,0,0.1); border: 1px solid red; color: red; padding: 10px; font-size: 0.7rem; border-radius: 5px; cursor: pointer; z-index: 100; font-weight: bold; }
-        canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+        /* Bouton Retour */
+        .btn-retour { background: #ff9800; color: black; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-box">
-            <h2 style="color:var(--vert); margin-top:0;">FM ARENA 2026</h2>
-            <p style="font-size:0.8rem; color:#aaa;">Connexion sécurisée</p>
-            <input type="text" id="user" placeholder="Identifiant (admin)">
-            <input type="password" id="pass" placeholder="Mot de passe">
-            <button class="btn-login" onclick="checkLogin()">Entrer sur le terrain</button>
-            <p id="error" style="color:#ff4444; font-size:0.9rem; margin-top:15px; font-weight:bold;"></p>
-        </div>
+    <h1>🌐 Terrain Partagé - FM 2026</h1>
+    <p>Ce que vous cliquez ici s'allume chez tout le monde !</p>
+
+    <div id="terrain">
+        <div class="ballon" id="obj1" onclick="demanderValidation('obj1')">Obj 1</div>
+        <div class="ballon" id="obj2" onclick="demanderValidation('obj2')">Obj 2</div>
+        <div class="ballon" id="obj3" onclick="demanderValidation('obj3')">Obj 3</div>
     </div>
 
-    <div class="header">
-        <h1>OBJECTIF 2026</h1>
-        <div class="maillot-container">
-            <div class="jersey">
-                <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#00d2ff" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
-                    <text x="50" y="60" font-size="22" text-anchor="middle" fill="white">👥</text>
-                </svg>
-                <span style="color:var(--bleu)">PEOPLE</span>
-            </div>
-            <div class="jersey">
-                <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#39ff14" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
-                    <text x="5
+    <button class="btn-retour" onclick="annulerDernier()">↩️ Retour (Annuler le dernier)</button>
+
+    <div class="notes-section">
+        <h3>📝 Notes de l'équipe</h3>
+        <textarea id="boite-note" placeholder="Écrivez un commentaire ici..."></textarea>
+        <br>
+        <button class="btn btn-oui" onclick="sauvegarderNote()">Envoyer la note</button>
+        <p id="affichage-note" style="color: #aaa; font-style: italic; margin-top: 15px;">Aucune note pour le moment.</p>
+    </div>
+
+    <div id="popup-confirm">
+        <h3>Êtes-vous sûr de valider cet objectif ?</h3>
+        <button class="btn btn-oui" onclick="confirmerValidation()">Oui</button>
+        <button class="btn btn-non" onclick="fermerPopup()">Non</button>
+    </div>
+
+    <script>
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCJGFiEeRAa7Kar7YYilrtxirQbG5Yxo4E",
+  authDomain: "projet-2026-be8d4.firebaseapp.com",
+  databaseURL: "https://projet-2026-be8d4-default-rtdb.firebaseio.com",
+  projectId: "projet-2026-be8d4",
+  storageBucket: "projet-2026-be8d4.firebasestorage.app",
+  messagingSenderId: "487136771744",
+  appId: "1:487136771744:web:94f9efededb4038b1353c5"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+        // Remplace tout ce bloc par celui donné par Firebase à l'étape 3
+        const firebaseConfig = {
+            apiKey: "TON_API_KEY",
+            authDomain: "TON_PROJET.firebaseapp.com",
+            databaseURL: "https://TON_PROJET-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "TON_PROJET",
+            storageBucket: "TON_PROJET.appspot.com",
+            messagingSenderId: "TON_ID",
+            appId: "TON_APP_ID"
+        };
+        
+        // Initialisation de Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Variables pour gérer la popup
+        let ballonEnAttente = null;
+
+        // 1. Demander confirmation avant d'allumer
+        function demanderValidation(idBallon) {
+            ballonEnAttente = idBallon;
+            document.getElementById('popup-confirm').style.display = 'block';
+        }
+
+        function fermerPopup() {
+            document.getElementById('popup-confirm').style.display = 'none';
+            ballonEnAttente = null;
+        }
+
+        // 2. Confirmer et envoyer à Firebase
+        function confirmerValidation() {
+            if (ballonEnAttente) {
+                // Enregistre l'état "vrai" (allumé) et l'heure (pour savoir lequel est le dernier)
+                db.ref('objectifs/' + ballonEnAttente).set({
+                    allume: true,
+                    timestamp: Date.now()
+                });
+                fermerPopup();
+            }
+        }
+
+        // 3. Écouter les changements en TEMPS RÉEL
+        // Dès qu'un PC change une donnée, Firebase prévient cette fonction
+        db.ref('objectifs').on('value', (snapshot) => {
+            const donnees = snapshot.val();
+            
+            // On réinitialise tous les ballons
+            document.querySelectorAll('.ballon').forEach(b => b.classList.remove('active'));
+
+            if (donnees) {
+                // On allume ceux qui sont dans la base de données
+                for (const [id, info] of Object.entries(donnees)) {
+                    if (info.allume) {
+                        document.getElementById(id).classList.add('active');
+                    }
+                }
+            }
+        });
+
+        // 4. Bouton Retour (Annuler le dernier validé)
+        function annulerDernier() {
+            db.ref('objectifs').once('value').then((snapshot) => {
+                const donnees = snapshot.val();
+                if (donnees) {
+                    // Trouver l'objectif avec le timestamp le plus récent
+                    let dernierId = null;
+                    let dernierTemps = 0;
+                    
+                    for (const [id, info] of Object.entries(donnees)) {
+                        if (info.timestamp > dernierTemps) {
+                            dernierTemps = info.timestamp;
+                            dernierId = id;
+                        }
+                    }
+
+                    // Supprimer ce dernier objectif
+                    if (dernierId) {
+                        db.ref('objectifs/' + dernierId).remove();
+                    }
+                }
+            });
+        }
+
+        // 5. Gestion des notes collaboratives
+        function sauvegarderNote() {
+            const texte = document.getElementById('boite-note').value;
+            db.ref('note_equipe').set(texte);
+            document.getElementById('boite-note').value = ''; // Vide la case
+        }
+
+        // Écouter les notes en temps réel
+        db.ref('note_equipe').on('value', (snapshot) => {
+            const note = snapshot.val();
+            if(note) {
+                document.getElementById('affichage-note').innerText = note;
+            }
+        });
+
+    </script>
+</body>
+</html>
