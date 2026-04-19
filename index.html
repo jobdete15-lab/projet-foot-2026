@@ -26,7 +26,8 @@
         /* === HEADER === */
         .header { text-align: center; padding: 20px; width: 100%; max-width: 1000px; }
         h1 { margin: 0 0 5px 0; font-size: 2rem; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        .live-badge { color: #ff4444; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .live-badge { color: #ff4444; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; animation: pulse 2s infinite; display: inline-flex; align-items: center; gap: 8px; }
+        .point-rouge { width: 10px; height: 10px; background: red; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px red; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
         .maillot-container { display: flex; justify-content: center; gap: 30px; }
@@ -58,7 +59,7 @@
         .cage-left { left: -3px; border-left: none; }
         .cage-right { right: -3px; border-right: none; }
 
-        /* === BALLONS 3D (AVEC TEXTE DEDANS) === */
+        /* === BALLONS 3D === */
         #game-content { display: flex; width: 100%; height: 100%; position: relative; z-index: 10; align-items: center; justify-content: space-evenly; }
         .colonne { display: flex; flex-direction: column; gap: 30px; }
 
@@ -90,6 +91,12 @@
         }
         @keyframes floatUp { 0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); } 20% { opacity: 1; transform: translate(-50%, -20px) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -60px) scale(1); } }
 
+        /* Animation de la balle qui fait la passe */
+        .passe-anim {
+            position: absolute; font-size: 35px; z-index: 50; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5)); pointer-events: none;
+        }
+
         /* === POPUP === */
         #popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
         .popup-box { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; padding: 25px; border: 2px solid var(--vert); border-radius: 12px; text-align: center; z-index: 1501; width: 80%; max-width: 300px; box-shadow: 0 0 30px rgba(57, 255, 20, 0.3); }
@@ -107,16 +114,18 @@
         .chat-box h3 { margin: 0 0 10px 0; color: var(--bleu); }
         .messages { flex: 1; background: #000; border: 1px solid #222; border-radius: 6px; padding: 10px; overflow-y: auto; margin-bottom: 10px; font-size: 0.9rem; }
         .msg-line { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .msg-name { color: var(--vert); font-weight: bold; margin-right: 5px; }
+        .msg-name { font-weight: bold; margin-right: 5px; }
         
         .chat-inputs { display: flex; gap: 5px; }
-        .chat-inputs input { margin: 0; padding: 10px; border-radius: 5px; font-size: 0.9rem; }
-        #input-name { flex: 1; max-width: 100px; }
-        #input-text { flex: 3; }
-        .btn-envoyer { background: var(--bleu); color: black; font-weight: bold; border: none; border-radius: 5px; padding: 0 15px; cursor: pointer; }
+        .chat-inputs input { margin: 0; padding: 10px; border-radius: 5px; font-size: 0.9rem; border: none; }
+        #input-name { flex: 1; max-width: 110px; background: #333; color: white; }
+        #input-text { flex: 3; background: #222; color: white; }
+        .btn-envoyer { background: var(--bleu); color: black; font-weight: bold; border: none; border-radius: 5px; padding: 0 15px; cursor: pointer; transition: 0.2s; }
+        .btn-envoyer:hover { background: white; }
 
         .actions { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .btn-retour { background: #ff9800; color: black; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .btn-retour { background: #ff9800; color: black; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .btn-retour:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,152,0,0.4); }
 
         canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; display: none; }
     </style>
@@ -138,18 +147,36 @@
     <div class="popup-box" id="popup-confirm">
         <h3>Êtes-vous sûr de valider cet objectif ?</h3>
         <div class="btn-group">
-            <button class="btn-pop btn-oui" onclick="confirmerValidation()">Oui</button>
+            <button class="btn-pop btn-oui" onclick="confirmerValidation()">Oui, on passe !</button>
             <button class="btn-pop btn-non" onclick="fermerPopup()">Non</button>
         </div>
     </div>
 
     <div class="header">
         <h1>OBJECTIF 2026</h1>
-        <div class="live-badge">🔴 En Direct avec l'équipe</div>
+        <div class="live-badge"><span class="point-rouge"></span> En Direct avec l'équipe</div>
         <div class="maillot-container">
-            <div class="jersey"><svg class="jersey-svg" viewBox="0 0 100 100"><path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#00d2ff"/></svg><span style="color:var(--bleu)">PEOPLE</span></div>
-            <div class="jersey"><svg class="jersey-svg" viewBox="0 0 100 100"><path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#39ff14"/></svg><span style="color:var(--vert)">ENVIRON.</span></div>
-            <div class="jersey"><svg class="jersey-svg" viewBox="0 0 100 100"><path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#ff007f"/></svg><span style="color:var(--rose)">VIVRE</span></div>
+            <div class="jersey">
+                <svg class="jersey-svg" viewBox="0 0 100 100">
+                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#00d2ff"/>
+                    <text x="50" y="60" font-size="25" text-anchor="middle" fill="white">👥</text>
+                </svg>
+                <span style="color:var(--bleu)">PEOPLE</span>
+            </div>
+            <div class="jersey">
+                <svg class="jersey-svg" viewBox="0 0 100 100">
+                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#39ff14"/>
+                    <text x="50" y="60" font-size="25" text-anchor="middle" fill="black">🌍</text>
+                </svg>
+                <span style="color:var(--vert)">ENVIRON.</span>
+            </div>
+            <div class="jersey">
+                <svg class="jersey-svg" viewBox="0 0 100 100">
+                    <path d="M20 30 L35 15 L65 15 L80 30 L80 40 L65 40 L65 85 L35 85 L35 40 L20 40 Z" fill="#ff007f"/>
+                    <text x="50" y="60" font-size="25" text-anchor="middle" fill="white">🤝</text>
+                </svg>
+                <span style="color:var(--rose)">VIVRE</span>
+            </div>
         </div>
     </div>
 
@@ -177,8 +204,8 @@
             <h3>💬 Chat d'Équipe</h3>
             <div class="messages" id="chat-messages">Chargement des messages...</div>
             <div class="chat-inputs">
-                <input type="text" id="input-name" placeholder="Prénom">
-                <input type="text" id="input-text" placeholder="Tapez votre message...">
+                <input type="text" id="input-name" placeholder="Votre prénom">
+                <input type="text" id="input-text" placeholder="Tapez votre commentaire...">
                 <button class="btn-envoyer" onclick="envoyerMessage()">Envoyer</button>
             </div>
         </div>
@@ -203,9 +230,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // === AUDIOS ===
-        const sonValidation = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        const sonVictoire = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
+        // === AUDIOS (Nouveaux sons plus gratifiants) ===
+        const sonValidation = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'); // Son "Bling" de victoire
+        const sonVictoire = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'); // Musique finale
 
         const objectives = [
             { id: 1, label: "Formation", zone: "bleu", col: "col-defense" },
@@ -256,14 +283,14 @@
                 }
                 drawLines();
 
-                // Victoire Finale
+                // Victoire Finale (Déclenchée seulement si tous sont validés)
                 if(state.length === objectives.length && !aGagne) { 
                     document.getElementById('arena').classList.add('victory');
                     sonVictoire.play().catch(e=>{});
                     launchConfetti();
                     aGagne = true;
                 } else if (state.length < objectives.length) {
-                    aGagne = false; // Réinitialise si on annule un but
+                    aGagne = false; 
                 }
             });
 
@@ -275,13 +302,23 @@
                 if(data) {
                     const msgs = Object.values(data).sort((a,b) => a.time - b.time);
                     msgs.forEach(m => {
-                        box.innerHTML += `<div class="msg-line"><span class="msg-name">${m.name} :</span><span>${m.text}</span></div>`;
+                        // Création de la ligne de chat avec la couleur spécifique au prénom
+                        const c = genererCouleurPrenom(m.name);
+                        box.innerHTML += `<div class="msg-line"><span class="msg-name" style="color:${c}">${m.name} :</span><span style="color:#ddd">${m.text}</span></div>`;
                     });
-                    box.scrollTop = box.scrollHeight; // Descend tout en bas
+                    box.scrollTop = box.scrollHeight; // Descend tout en bas automatiquement
                 } else {
-                    box.innerHTML = "<em>Soyez le premier à envoyer un message !</em>";
+                    box.innerHTML = "<em>Aucun message. Soyez le premier à commenter !</em>";
                 }
             });
+        }
+
+        // Génère une couleur toujours identique pour un même prénom
+        function genererCouleurPrenom(nom) {
+            let hash = 0;
+            for (let i = 0; i < nom.length; i++) { hash = nom.charCodeAt(i) + ((hash << 5) - hash); }
+            const hue = Math.abs(hash % 360);
+            return `hsl(${hue}, 80%, 65%)`;
         }
 
         function demanderValidation(id) {
@@ -299,22 +336,60 @@
 
         function confirmerValidation() {
             if(ballonEnAttente) {
-                // Animation de texte ("Excellent!")
-                const mots = ["Excellent !", "Continuez comme ça !", "Beau travail !", "Parfait !"];
-                const motChoisi = mots[Math.floor(Math.random() * mots.length)];
-                const f = document.createElement('div');
-                f.className = 'feedback'; f.innerText = motChoisi;
-                document.getElementById(`ballon-${ballonEnAttente}`).appendChild(f);
-                setTimeout(() => f.remove(), 1200);
-
-                // Son de validation
-                sonValidation.currentTime = 0;
-                sonValidation.play().catch(e=>{});
-
-                // Envoi à la base de données
-                db.ref('fm_2026_objectifs/' + ballonEnAttente).set({ timestamp: Date.now() });
+                // Animation de la Passe ⚽
+                if (state.length > 0) {
+                    animerPasse(state[state.length - 1], ballonEnAttente);
+                } else {
+                    validerOfficiellement(); // S'il n'y a pas de ballon précédent, on valide direct
+                }
                 fermerPopup();
             }
+        }
+
+        // Fait voler un ballon d'un point A à un point B
+        function animerPasse(idDepart, idArrivee) {
+            const b1 = document.getElementById(`ballon-${idDepart}`).querySelector('.ball-3d').getBoundingClientRect();
+            const b2 = document.getElementById(`ballon-${idArrivee}`).querySelector('.ball-3d').getBoundingClientRect();
+            const arena = document.getElementById('arena').getBoundingClientRect();
+
+            const ballePasse = document.createElement('div');
+            ballePasse.className = 'passe-anim';
+            ballePasse.innerText = "⚽";
+            ballePasse.style.left = (b1.left - arena.left + b1.width/2 - 17) + 'px';
+            ballePasse.style.top = (b1.top - arena.top + b1.height/2 - 17) + 'px';
+            
+            document.getElementById('arena').appendChild(ballePasse);
+
+            // Force le navigateur à dessiner la position de départ
+            ballePasse.getBoundingClientRect();
+
+            // Déplace la balle vers la nouvelle cible en la faisant tourner
+            ballePasse.style.left = (b2.left - arena.left + b2.width/2 - 17) + 'px';
+            ballePasse.style.top = (b2.top - arena.top + b2.height/2 - 17) + 'px';
+            ballePasse.style.transform = 'rotate(1080deg)';
+
+            // Une fois l'animation finie (0.6s), on valide vraiment et on affiche les félicitations
+            setTimeout(() => {
+                ballePasse.remove();
+                validerOfficiellement();
+            }, 600);
+        }
+
+        function validerOfficiellement() {
+            // Affichage des Mots d'encouragement
+            const mots = ["Excellent !", "Continuez comme ça !", "Beau travail !", "Super passe !", "Bravo !"];
+            const f = document.createElement('div');
+            f.className = 'feedback'; 
+            f.innerText = mots[Math.floor(Math.random() * mots.length)];
+            document.getElementById(`ballon-${ballonEnAttente}`).appendChild(f);
+            setTimeout(() => f.remove(), 1200);
+
+            // Son de réussite
+            sonValidation.currentTime = 0;
+            sonValidation.play().catch(e=>{});
+
+            // Envoi de l'information à tous les ordinateurs connectés
+            db.ref('fm_2026_objectifs/' + ballonEnAttente).set({ timestamp: Date.now() });
         }
 
         function annulerDerniereAction() {
@@ -329,13 +404,18 @@
         }
 
         function envoyerMessage() {
-            const nom = document.getElementById('input-name').value.trim() || "Un(e) collègue";
+            const nom = document.getElementById('input-name').value.trim() || "Anonyme";
             const txt = document.getElementById('input-text').value.trim();
             if(txt !== "") { 
                 db.ref('fm_2026_chat_v2').push({ name: nom, text: txt, time: Date.now() }); 
                 document.getElementById('input-text').value = ""; 
             }
         }
+
+        // Permet d'envoyer le message avec la touche "Entrée"
+        document.getElementById('input-text').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') envoyerMessage();
+        });
 
         function drawLines() {
             const svg = document.getElementById('svg-lines');
@@ -356,7 +436,7 @@
         function launchConfetti() {
             const canvas = document.getElementById('confetti'); canvas.style.display = 'block';
             const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            let p = []; for(let i=0; i<200; i++) p.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height-canvas.height, w: Math.random()*10+5, d: Math.random()*10, c: `hsl(${Math.random()*360},100%,50%)` });
+            let p = []; for(let i=0; i<250; i++) p.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height-canvas.height, w: Math.random()*10+5, d: Math.random()*10, c: `hsl(${Math.random()*360},100%,50%)` });
             function draw() {
                 ctx.clearRect(0,0,canvas.width, canvas.height);
                 p.forEach(part => { ctx.fillStyle = part.c; ctx.fillRect(part.x, part.y, part.w, part.w); part.y += Math.cos(part.d) + 3; part.x += Math.sin(0); if(part.y > canvas.height) part.y = -10; });
