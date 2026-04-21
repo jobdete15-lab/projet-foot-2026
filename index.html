@@ -13,117 +13,144 @@
             --fm-blue: #0033a0; --fm-cyan: #00b5e2; 
             --eco-green: #2ecc71; --partner-gold: #f1c40f;
             --pitch-1: #0a2412; --pitch-2: #0d2d16;
-            --bg-dark: #020503;
+            --bg-dark: #010203;
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Arial Black', sans-serif; background: #000; color: white; overflow: hidden; }
 
-        /* === SYSTEME DE SLIDES === */
-        .slider-container { width: 100%; height: 100%; position: relative; transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1); }
-        .slide { width: 100vw; height: 100vh; position: absolute; top: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-        
-        /* Positionnement des slides */
-        #slide-1 { left: 0; }
-        #slide-2 { left: 100vw; }
-        #slide-3 { left: 200vw; }
+        /* === NAVIGATION === */
+        .nav-arrow { 
+            position: fixed; top: 50%; transform: translateY(-50%); 
+            width: 80px; height: 80px; background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; z-index: 9999; transition: 0.3s; 
+            font-size: 40px; color: white; backdrop-filter: blur(5px);
+        }
+        .nav-arrow:hover { background: var(--fm-cyan); border-color: white; box-shadow: 0 0 30px var(--fm-cyan); transform: translateY(-50%) scale(1.1); }
+        .arrow-left { left: 40px; display: none; }
+        .arrow-right { right: 40px; }
 
-        /* === NAVIGATION PAR FLECHES === */
-        .nav-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; background: rgba(255,255,255,0.1); border: 2px solid var(--fm-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5000; transition: 0.3s; font-size: 24px; color: var(--fm-cyan); backdrop-filter: blur(5px); }
-        .nav-arrow:hover { background: var(--fm-cyan); color: black; box-shadow: 0 0 20px var(--fm-cyan); }
-        .arrow-left { left: 20px; display: none; }
-        .arrow-right { right: 20px; }
+        /* === SLIDER === */
+        .slider-container { width: 300vw; height: 100vh; display: flex; transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1); }
+        .slide { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-        /* === SLIDE 1 : IDENTIQUE IMAGE (RE-CREATION CSS) === */
-        .arena-intro { width: 100%; height: 100%; background: radial-gradient(circle at center, #1a2a44 0%, #050a15 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; text-align: center; }
-        .stadium-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=2000') center/cover no-repeat; opacity: 0.3; filter: grayscale(1) brightness(0.5); }
-        .intro-content { z-index: 10; padding: 20px; }
-        .intro-title { font-size: 5rem; font-weight: 900; letter-spacing: -2px; margin: 0; text-transform: uppercase; color: #fff; text-shadow: 0 0 30px rgba(0, 181, 226, 0.8); }
-        .intro-subtitle { font-size: 1.8rem; letter-spacing: 2px; color: #a0d8f1; margin-top: -10px; font-weight: 300; }
-        .intro-tagline { position: absolute; bottom: 80px; width: 100%; font-style: italic; font-size: 1.2rem; color: rgba(255,255,255,0.7); letter-spacing: 4px; }
-        .intro-tagline::before, .intro-tagline::after { content: ''; position: absolute; top: 50%; width: 100px; height: 1px; background: linear-gradient(to right, transparent, white); margin: 0 20px; }
+        /* === SLIDE 1 : COPIE EXACTE DE LA CAPTURE (2026) === */
+        #slide-1 {
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), 
+                        url('https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=2069&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+        }
+        /* Effet de lumières de stade */
+        #slide-1::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 20%, rgba(135, 206, 250, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .intro-box { z-index: 10; text-align: center; }
+        .intro-title { 
+            font-size: 6rem; font-weight: 900; margin: 0; 
+            letter-spacing: -2px; color: #fff; line-height: 0.9;
+            text-shadow: 0 0 25px rgba(0, 181, 226, 0.6), 0 5px 15px rgba(0,0,0,0.8);
+            text-transform: uppercase;
+        }
+        .intro-subtitle { 
+            font-size: 2.5rem; margin-top: 15px; font-weight: bold;
+            color: #fff; letter-spacing: 0px; text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+            font-family: 'Arial', sans-serif; opacity: 0.95;
+        }
+        .intro-tagline { 
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            font-size: 1.6rem; color: #fff; font-style: italic; font-weight: normal;
+            letter-spacing: 1px; border-bottom: 2px solid rgba(0, 181, 226, 0.5);
+            padding-bottom: 15px; font-family: 'Georgia', serif;
+        }
 
         /* === SLIDE 2 : TERRAIN TACTIQUE 3D === */
-        .scene-3d { perspective: 1500px; width: 100%; height: 80vh; display: flex; align-items: center; justify-content: center; margin-top: 50px; }
-        .pitch-3d { width: 1000px; height: 500px; background: repeating-linear-gradient(90deg, var(--pitch-1) 0, var(--pitch-1) 10%, var(--pitch-2) 10%, var(--pitch-2) 20%); border: 4px solid rgba(255,255,255,0.3); transform: rotateX(50deg) rotateZ(0deg); position: relative; box-shadow: 0 50px 100px rgba(0,0,0,0.8); transform-style: preserve-3d; }
-        .pitch-3d::after { content: ''; position: absolute; inset: 15px; border: 2px solid rgba(255,255,255,0.4); pointer-events: none; }
-        .mid-line { position: absolute; left: 50%; top: 15px; bottom: 15px; width: 2px; background: rgba(255,255,255,0.4); transform: translateX(-50%); }
-        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; }
-        
+        #slide-2 { background: var(--bg-dark); font-family: 'Arial', sans-serif; }
+        .scene-3d { perspective: 2000px; width: 100%; height: 75vh; display: flex; align-items: center; justify-content: center; }
+        .pitch-3d { 
+            width: 1100px; height: 550px; 
+            background: repeating-linear-gradient(90deg, #123d1d 0, #123d1d 10%, #164d25 10%, #164d25 20%); 
+            border: 4px solid rgba(255,255,255,0.3); 
+            transform: rotateX(50deg) rotateZ(0deg); 
+            position: relative; box-shadow: 0 80px 150px rgba(0,0,0,1); 
+            transform-style: preserve-3d;
+        }
+        .pitch-3d::after { content: ''; position: absolute; inset: 20px; border: 2px solid rgba(255,255,255,0.4); pointer-events: none; }
+        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; }
+
         /* Maillots */
-        .maillot { position: absolute; width: 55px; height: 55px; transform: translate(-50%, -50%) rotateX(-50deg); cursor: pointer; transition: 0.3s; z-index: 100; display: flex; flex-direction: column; align-items: center; }
-        .maillot:hover { transform: translate(-50%, -70%) rotateX(-50deg) scale(1.2); }
-        .maillot-svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5)); }
-        .num-badge { position: absolute; bottom: -15px; background: #000; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; border: 1px solid #444; }
-        
-        /* Zones Tactiques */
-        .bench { position: absolute; bottom: -70px; left: 50%; transform: translateX(-50%) rotateX(-50deg); width: 250px; height: 60px; background: rgba(20,20,20,0.9); border: 1px solid #333; border-radius: 10px; display: flex; justify-content: center; gap: 30px; align-items: center; }
+        .player { position: absolute; width: 70px; height: 70px; transform: translate(-50%, -50%) rotateX(-50deg); cursor: pointer; transition: 0.4s; z-index: 100; }
+        .player:hover { transform: translate(-50%, -85%) rotateX(-50deg) scale(1.3); }
+        .maillot-svg { width: 100%; height: 100%; filter: drop-shadow(0 20px 10px rgba(0,0,0,0.8)); }
 
-        /* === BULLES OBJECTIFS === */
-        #obj-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; backdrop-filter: blur(8px); align-items: center; justify-content: center; }
-        .modal-card { background: #0a0a0a; border: 1px solid var(--fm-cyan); padding: 40px; border-radius: 20px; width: 450px; text-align: center; box-shadow: 0 0 50px rgba(0, 181, 226, 0.2); }
-        .modal-title { font-size: 1.2rem; font-weight: bold; line-height: 1.5; margin: 20px 0; color: #fff; text-transform: uppercase; }
+        .bench { position: absolute; bottom: -90px; left: 50%; transform: translateX(-50%) rotateX(-50deg); width: 300px; height: 80px; background: rgba(20,20,20,0.9); border: 2px solid #444; border-radius: 15px; display: flex; justify-content: center; gap: 40px; align-items: center; }
 
-        /* === CHAT === */
-        .chat-view { width: 80%; max-width: 700px; background: #111; height: 60vh; border-radius: 15px; border: 1px solid #333; display: flex; flex-direction: column; padding: 20px; }
-        #chat-msgs { flex: 1; overflow-y: auto; background: #000; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        /* === MODAL === */
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; backdrop-filter: blur(10px); align-items: center; justify-content: center; }
+        .modal-card { background: #000; border: 2px solid var(--fm-cyan); padding: 50px; border-radius: 25px; width: 500px; text-align: center; box-shadow: 0 0 60px rgba(0, 181, 226, 0.4); }
+        .modal-title { font-size: 1.5rem; font-weight: bold; margin: 30px 0; color: #fff; line-height: 1.4; text-transform: uppercase; }
+
+        /* === SLIDE 3 : CHAT === */
+        .chat-box { width: 80%; max-width: 800px; height: 65vh; background: #0a0a0a; border: 1px solid #333; border-radius: 20px; display: flex; flex-direction: column; padding: 25px; font-family: sans-serif; }
+        #messages { flex: 1; overflow-y: auto; background: #000; padding: 20px; border-radius: 15px; border: 1px solid #222; margin-bottom: 20px; }
+        .input-row { display: flex; gap: 10px; }
+        .input-row input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 15px; border-radius: 10px; font-size: 1rem; }
 
         /* Animations */
-        .ball-pass { position: absolute; font-size: 30px; z-index: 1000; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
-        .maillot.active .maillot-svg { filter: drop-shadow(0 0 15px var(--fm-cyan)); }
+        .ball-pass { position: absolute; font-size: 45px; z-index: 1000; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+        .player.active .maillot-svg { filter: drop-shadow(0 0 20px var(--fm-cyan)); }
     </style>
 </head>
 <body>
 
-    <div class="nav-arrow arrow-left" onclick="moveSlide(-1)">&#10094;</div>
-    <div class="nav-arrow arrow-right" onclick="moveSlide(1)">&#10095;</div>
+    <div class="nav-arrow arrow-left" onclick="changeSlide(-1)">&#10094;</div>
+    <div class="nav-arrow arrow-right" onclick="changeSlide(1)">&#10095;</div>
 
-    <div class="slider-container" id="master-slider">
+    <div class="slider-container" id="main-slider">
         
         <div class="slide" id="slide-1">
-            <div class="arena-intro">
-                <div class="stadium-bg"></div>
-                <div class="intro-content">
-                    <h1 class="intro-title">FONTENAY ARENA 2026</h1>
-                    <p class="intro-subtitle">La Coupe du Monde de notre performance</p>
-                </div>
-                <div class="intro-tagline">Explorer pour construire durablement.</div>
+            <div class="intro-box">
+                <h1 class="intro-title">FONTENAY ARENA 2026</h1>
+                <p class="intro-subtitle">La Coupe du Monde de notre performance</p>
             </div>
+            <div class="intro-tagline">Explorer pour construire durablement.</div>
         </div>
 
         <div class="slide" id="slide-2">
-            <h1>PLAN TACTIQUE 3D</h1>
+            <h2 style="letter-spacing: 5px; margin-bottom: 10px; color: var(--fm-cyan);">SCHÉMA TACTIQUE : FONTENAY ARENA 2026</h2>
             <div class="scene-3d">
                 <div class="pitch-3d" id="pitch">
-                    <div class="mid-line"></div>
                     <div class="center-circle"></div>
                     <div id="players-layer"></div>
                 </div>
                 <div class="bench" id="bench-layer"></div>
             </div>
-            <button onclick="annulerDernier()" style="background:none; border:1px solid #ff9800; color:#ff9800; padding:10px; cursor:pointer; border-radius:5px;">↩ Annuler dernière action</button>
+            <button onclick="undo()" style="background:transparent; border:1px solid #ff9800; color:#ff9800; padding:12px 30px; cursor:pointer; border-radius:30px; font-weight:bold; margin-top:30px;">↩ ANNULER DERNIÈRE PASSE</button>
         </div>
 
         <div class="slide" id="slide-3">
-            <h1>COLLABORATION ÉQUIPE</h1>
-            <div class="chat-view">
-                <div id="chat-msgs"></div>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="c-name" placeholder="Prénom" style="width:100px; padding:10px;">
-                    <input type="text" id="c-txt" placeholder="Votre message..." style="flex:1; padding:10px;">
-                    <button onclick="sendMsg()" style="padding:10px; background:var(--fm-cyan); border:none; cursor:pointer;">ENVOYER</button>
+            <h2 style="letter-spacing: 5px;">COLLABORATION EN DIRECT</h2>
+            <div class="chat-box">
+                <div id="messages"></div>
+                <div class="input-row">
+                    <input type="text" id="user-name" placeholder="Votre prénom" style="width: 150px;">
+                    <input type="text" id="user-msg" placeholder="Votre commentaire stratégique..." style="flex: 1;">
+                    <button onclick="send()" style="padding: 0 30px; background:var(--fm-cyan); border:none; font-weight:bold; border-radius:10px; cursor:pointer; color:black;">ENVOYER</button>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <div id="obj-modal">
+    <div id="modal">
         <div class="modal-card">
-            <div id="m-icon" style="font-size:3rem;">👥</div>
-            <div class="modal-title" id="m-title">Objectif stratégique ici...</div>
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button onclick="valider()" style="padding:12px 25px; background:var(--fm-cyan); border:none; font-weight:bold; cursor:pointer; border-radius:5px;">OUI, VALIDER</button>
-                <button onclick="closeModal()" style="padding:12px 25px; background:#333; color:white; border:none; cursor:pointer; border-radius:5px;">ANNULER</button>
+            <div id="modal-icon" style="font-size: 5rem;"></div>
+            <div class="modal-title" id="modal-text"></div>
+            <div style="display: flex; gap: 20px; justify-content: center;">
+                <button onclick="confirmVal()" style="padding: 15px 40px; background:var(--fm-cyan); border:none; font-weight:bold; cursor:pointer; border-radius:10px; color:black;">OUI, VALIDER</button>
+                <button onclick="closeMod()" style="padding: 15px 40px; background:#333; color:white; border:none; cursor:pointer; border-radius:10px;">ANNULER</button>
             </div>
         </div>
     </div>
@@ -144,107 +171,91 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Audio
-        const sPasse = new Audio('https://assets.mixkit.co/active_storage/sfx/2143/2143-preview.mp3');
-        const sWin = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
-
-        // Maillots
-        const svgMaillot = (color, icon) => `<svg viewBox="0 0 100 100" class="maillot-svg"><path d="M 20 25 L 35 10 L 65 10 L 80 25 L 80 40 L 65 40 L 65 90 L 35 90 L 35 40 L 20 40 Z" fill="${color}" stroke="white" stroke-width="2"/><text x="50" y="60" font-size="25" text-anchor="middle" fill="white">${icon}</text></svg>`;
+        // Design Maillot Pro
+        const drawMaillot = (color, icon) => `
+            <svg viewBox="0 0 100 100" class="maillot-svg">
+                <path d="M 25 22 L 40 10 L 60 10 L 75 22 L 75 42 L 65 42 L 65 88 L 35 88 L 35 42 L 25 42 Z" fill="${color}" stroke="white" stroke-width="2"/>
+                <text x="50" y="62" font-size="28" text-anchor="middle" fill="white" font-weight="bold">${icon}</text>
+            </svg>`;
 
         const objectives = [
-            { id: 1, type: "PEOPLE", icon: "👥", pos: {l:10, t:50}, title: "Maintenir les rituels managériaux sécurité et lutter contre l'accidentologie entrepôt." },
-            { id: 2, type: "PEOPLE", icon: "👥", pos: {l:30, t:20}, title: "Retravailler la communication et l'animation managériale via les outils de digitalisation." },
-            { id: 3, type: "PLANET", icon: "🌍", pos: {l:30, t:45}, title: "Digitaliser la gestion des compétences pour assurer le suivi des formations." },
-            { id: 4, type: "PLANET", icon: "🌍", pos: {l:30, t:75}, title: "Exploiter durablement le site et réduire l'empreinte carbone des opérations." },
-            { id: 5, type: "PEOPLE", icon: "👥", pos: {l:50, t:20}, title: "Solution de housseuse automatisée pour l'amélioration des conditions de travail." },
-            { id: 6, type: "PARTNER", icon: "🤝", pos: {l:50, t:50}, title: "Travailler l'amélioration continue client et déployer des actions concrètes en COPIL." },
-            { id: 7, type: "PEOPLE", icon: "👥", pos: {l:50, t:80}, title: "Modernisation et rénovation des espaces briefing pour plus de convivialité." },
-            { id: 8, type: "PARTNER", icon: "🤝", pos: {l:70, t:25}, title: "Réorganiser l'implantation zone packsize pour améliorer la performance logistique." },
-            { id: 9, type: "PLANET", icon: "🌍", pos: {l:70, t:50}, title: "Optimisation rooftops Beebryte pour limiter l'impact thermique et énergétique." },
-            { id: 10, type: "PARTNER", icon: "🤝", pos: {l:70, t:75}, title: "Garantir la conformité ICPE avec validation du porter à connaissance." },
-            { id: 11, type: "PEOPLE", icon: "👥", pos: {l:85, t:50}, title: "Modernisation des salles de pause avec espaces de détente collaborateurs." },
-            { id: 12, type: "PARTNER", icon: "🤝", bench: true, title: "Révision complète du PMS couvrant les volets HACCP, TACCP et VACCP." },
-            { id: 13, type: "PLANET", icon: "🌍", bench: true, title: "Accompagnement Restos du Cœur et Café Joyeux via actions bénévolat." }
+            { id: 1, type: "PEOPLE", icon: "👥", l: 15, t: 50, msg: "Développer la culture sécurité et lutter contre l'accidentologie et l'absentéisme." },
+            { id: 2, type: "PEOPLE", icon: "👥", l: 35, t: 22, msg: "Retravailler la communication et l'animation managériale via le digital." },
+            { id: 3, type: "PLANET", icon: "🌍", l: 35, t: 50, msg: "Digitaliser la gestion des compétences, formations et polyvalence." },
+            { id: 4, type: "PLANET", icon: "🌍", l: 35, t: 78, msg: "Exploiter durablement et réduire l'empreinte carbone au niveau des opérations." },
+            { id: 5, type: "PEOPLE", icon: "👥", l: 55, t: 22, msg: "Solution de housseuse automatisée afin d'améliorer les conditions de travail." },
+            { id: 6, type: "PARTNER", icon: "🤝", l: 55, t: 50, msg: "Amélioration continue avec nos clients et déploiement d'actions concrètes en COPIL." },
+            { id: 7, type: "PEOPLE", icon: "👥", l: 55, t: 78, msg: "Modernisation et rénovation des espaces briefing pour plus de convivialité." },
+            { id: 8, type: "PARTNER", icon: "🤝", l: 75, t: 22, msg: "Réorganiser l'implantation de la zone packsize pour la performance." },
+            { id: 9, type: "PLANET", icon: "🌍", l: 75, t: 50, msg: "Optimisation rooftops Beebryte pour limiter l'impact des consignes de température." },
+            { id: 10, type: "PARTNER", icon: "🤝", l: 75, t: 78, msg: "Garantir la conformité ICPE avec mise à jour et validation du porter à connaissance." },
+            { id: 11, type: "PEOPLE", icon: "👥", l: 88, t: 50, msg: "Modernisation des salles de pause avec espaces de détente collaborateurs." },
+            { id: 12, type: "PARTNER", icon: "🤝", bench: true, msg: "Révision complète du PMS couvrant HACCP, TACCP et VACCP." },
+            { id: 13, type: "PLANET", icon: "🌍", bench: true, msg: "Bénévolat : Accompagnement Restos du Cœur et Café Joyeux." }
         ];
 
-        let state = [];
-        let currentSlide = 0;
+        let slideIdx = 0;
         let pendingId = null;
+        let activeData = [];
 
         function init() {
             const pLayer = document.getElementById('players-layer');
             const bLayer = document.getElementById('bench-layer');
+            
             objectives.forEach(obj => {
-                const color = obj.type === "PEOPLE" ? "#00b5e2" : obj.type === "PLANET" ? "#2ecc71" : "#f1c40f";
-                const div = document.createElement('div');
-                div.className = "maillot";
-                div.id = "m-"+obj.id;
-                div.innerHTML = svgMaillot(color, obj.icon) + `<div class="num-badge">${obj.id}</div>`;
-                div.onclick = () => openModal(obj);
-                if(obj.bench) bLayer.appendChild(div); else { div.style.left = obj.pos.l+"%"; div.style.top = obj.pos.t+"%"; pLayer.appendChild(div); }
+                const col = obj.type === "PEOPLE" ? "#00b5e2" : obj.type === "PLANET" ? "#2ecc71" : "#f1c40f";
+                const d = document.createElement('div');
+                d.className = "player"; d.id = "p-"+obj.id;
+                d.innerHTML = drawMaillot(col, obj.icon);
+                d.onclick = () => showM(obj);
+                if(obj.bench) bLayer.appendChild(d);
+                else { d.style.left = obj.l+"%"; d.style.top = obj.t+"%"; pLayer.appendChild(d); }
             });
 
-            db.ref('arena_2026').on('value', snap => {
+            db.ref('arena_2026_strat').on('value', snap => {
                 const data = snap.val();
-                state = data ? Object.keys(data).map(k => ({id: parseInt(k), t: data[k].t})).sort((a,b)=>a.t-b.t) : [];
-                document.querySelectorAll('.maillot').forEach(m => m.classList.remove('active'));
-                state.forEach(s => document.getElementById("m-"+s.id).classList.add('active'));
-                if(state.length === 13) launchConfetti();
+                activeData = data ? Object.keys(data).map(k => ({id:parseInt(k), t:data[k].t})).sort((a,b)=>a.t-b.t) : [];
+                document.querySelectorAll('.player').forEach(p => p.classList.remove('active'));
+                activeData.forEach(s => document.getElementById("p-"+s.id).classList.add('active'));
             });
 
-            db.ref('arena_chat').on('value', snap => {
+            db.ref('chat_2026_strat').on('value', snap => {
                 const msgs = snap.val();
-                const box = document.getElementById('chat-msgs'); box.innerHTML = '';
-                if(msgs) Object.values(msgs).forEach(m => {
-                    box.innerHTML += `<div class="msg-line"><b style="color:var(--fm-cyan)">${m.n}:</b> ${m.t}</div>`;
-                });
-                box.scrollTop = box.scrollHeight;
+                const b = document.getElementById('messages'); b.innerHTML = '';
+                if(msgs) Object.values(msgs).forEach(m => b.innerHTML += `<div style="margin-bottom:8px;"><b>${m.u}:</b> ${m.t}</div>`);
+                b.scrollTop = b.scrollHeight;
             });
         }
 
-        // Navigation
-        function moveSlide(dir) {
-            currentSlide = Math.min(Math.max(currentSlide + dir, 0), 2);
-            document.getElementById('master-slider').style.transform = `translateX(-${currentSlide * 100}vw)`;
-            document.querySelector('.arrow-left').style.display = currentSlide === 0 ? 'none' : 'flex';
-            document.querySelector('.arrow-right').style.display = currentSlide === 2 ? 'none' : 'flex';
+        function changeSlide(dir) {
+            slideIdx = Math.max(0, Math.min(2, slideIdx + dir));
+            document.getElementById('main-slider').style.transform = `translateX(-${slideIdx * 100}vw)`;
+            document.querySelector('.arrow-left').style.display = slideIdx === 0 ? 'none' : 'flex';
+            document.querySelector('.arrow-right').style.display = slideIdx === 2 ? 'none' : 'flex';
         }
 
-        // Modal & Logic
-        function openModal(obj) { if(state.find(s=>s.id===obj.id)) return; pendingId = obj.id; document.getElementById('m-title').innerText = obj.title; document.getElementById('m-icon').innerText = obj.icon; document.getElementById('obj-modal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('obj-modal').style.display = 'none'; }
-        function valider() {
-            const last = state.length > 0 ? state[state.length-1].id : null;
-            closeModal();
-            if(last) doPass(last, pendingId); else finishVal(pendingId);
+        function showM(obj) { if(activeData.find(s=>s.id===obj.id)) return; pendingId = obj.id; document.getElementById('modal-text').innerText = obj.msg; document.getElementById('modal-icon').innerText = obj.icon; document.getElementById('modal').style.display = 'flex'; }
+        function closeMod() { document.getElementById('modal').style.display = 'none'; }
+        
+        function confirmVal() {
+            const prev = activeData.length > 0 ? activeData[activeData.length-1].id : null;
+            closeMod();
+            if(prev) playPass(prev, pendingId); else saveVal(pendingId);
         }
 
-        function doPass(fromId, toId) {
-            sPasse.play();
-            const r1 = document.getElementById("m-"+fromId).getBoundingClientRect();
-            const r2 = document.getElementById("m-"+toId).getBoundingClientRect();
-            const ball = document.createElement('div'); ball.className = "ball-pass"; ball.innerText = "⚽";
-            ball.style.left = r1.left+"px"; ball.style.top = r1.top+"px";
-            document.body.appendChild(ball);
-            setTimeout(() => { ball.style.left = r2.left+"px"; ball.style.top = r2.top+"px"; }, 50);
-            setTimeout(() => { ball.remove(); finishVal(toId); }, 550);
+        function playPass(f, t) {
+            const r1 = document.getElementById("p-"+f).getBoundingClientRect();
+            const r2 = document.getElementById("p-"+t).getBoundingClientRect();
+            const b = document.createElement('div'); b.className = "ball-pass"; b.innerText = "⚽";
+            b.style.left = r1.left+"px"; b.style.top = r1.top+"px";
+            document.body.appendChild(b);
+            setTimeout(() => { b.style.left = r2.left+"px"; b.style.top = r2.top+"px"; }, 50);
+            setTimeout(() => { b.remove(); saveVal(t); }, 600);
         }
 
-        function finishVal(id) {
-            sonValidation.play();
-            db.ref('arena_2026/'+id).set({t: Date.now()});
-        }
-
-        function annulerDernier() { if(state.length>0) db.ref('arena_2026/'+state[state.length-1].id).remove(); }
-        function sendMsg() { const n = document.getElementById('c-name').value; const t = document.getElementById('c-txt').value; if(n && t) { db.ref('arena_chat').push({n, t}); document.getElementById('c-txt').value=''; } }
-
-        function launchConfetti() { 
-            sWin.play(); const c = document.getElementById('confetti'); c.style.display='block'; const ctx = c.getContext('2d');
-            c.width = window.innerWidth; c.height = window.innerHeight;
-            let p = []; for(let i=0; i<200; i++) p.push({x:Math.random()*c.width, y:Math.random()*c.height, c:`hsl(${Math.random()*360},100%,50%)`, v:Math.random()*5+2});
-            function draw() { ctx.clearRect(0,0,c.width,c.height); p.forEach(i=>{ ctx.fillStyle=i.c; ctx.fillRect(i.x,i.y,8,8); i.y+=i.v; if(i.y>c.height) i.y=-10; }); requestAnimationFrame(draw); }
-            draw();
-        }
+        function saveVal(id) { db.ref('arena_2026_strat/'+id).set({t: Date.now()}); }
+        function undo() { if(activeData.length > 0) db.ref('arena_2026_strat/'+activeData[activeData.length-1].id).remove(); }
+        function send() { const u = document.getElementById('user-name').value; const t = document.getElementById('user-msg').value; if(u && t) { db.ref('chat_2026_strat').push({u, t}); document.getElementById('user-msg').value = ''; } }
 
         init();
     </script>
