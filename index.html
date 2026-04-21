@@ -3,108 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Logistic - Tactique CAP 2027</title>
+    <title>FM Logistic - Fontenay Arena 2027</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         :root {
-            --fm-blue: #0033a0; --fm-cyan: #00b5e2; 
-            --eco-green: #2ecc71; --partner-gold: #f1c40f;
+            /* Nouvelles couleurs basées sur tes diapositives */
+            --c-people: #e81f76; /* Rose/Rouge Défense */
+            --c-planet: #1abc9c; /* Vert Milieu */
+            --c-partner: #3498db; /* Bleu Attaque */
+            
             --pitch-1: #0e3b1c; --pitch-2: #124d25; --lines: rgba(255,255,255,0.4);
             --bg-dark: #07090b;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background: var(--bg-dark); color: white; margin: 0; overflow-x: hidden; }
 
-        /* === BARRE DE NAVIGATION (STYLE APP MOBILE/WEB) === */
+        /* === GESTION DES PAGES (SCREENS) === */
+        .screen { display: none; width: 100vw; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; top: 0; left: 0; background: var(--bg-dark); z-index: 10; }
+        .screen.active { display: flex; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* === 0. CONNEXION === */
+        #screen-login { z-index: 5000; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); }
+        .login-box { background: #111; padding: 40px; border-radius: 15px; border: 1px solid var(--c-planet); text-align: center; width: 85%; max-width: 350px; box-shadow: 0 10px 40px rgba(26, 188, 156, 0.2); }
+        .login-box input { display: block; margin: 15px auto; padding: 12px; border-radius: 8px; border: 1px solid #333; width: 85%; background: #000; color: white; text-align: center; font-size: 1rem; }
+        .btn-login { background: var(--c-planet); color: #000; font-weight: bold; padding: 12px 30px; margin-top: 10px; border: none; border-radius: 8px; cursor: pointer; width: 90%; font-size: 1.1rem; }
+
+        /* === 1. INTRO (FONTENAY ARENA 2027) === */
+        #screen-intro { 
+            background: radial-gradient(ellipse at top, #1a3a5a 0%, #000 80%);
+            text-align: center; position: relative; overflow: hidden;
+        }
+        /* Effet de projecteurs */
+        .spotlight { position: absolute; top: -20%; width: 200px; height: 100vh; background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 100%); transform-origin: top center; pointer-events: none; }
+        .spot-left { left: 20%; transform: rotate(30deg); } .spot-right { right: 20%; transform: rotate(-30deg); }
+        
+        .intro-title { font-size: 4rem; font-weight: 900; margin: 0; letter-spacing: 2px; text-transform: uppercase; background: linear-gradient(to bottom, #fff, #999); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.8)); }
+        .intro-subtitle { font-size: 1.8rem; color: #aaddff; margin-top: 10px; font-weight: 300; letter-spacing: 1px; }
+        .intro-footer { position: absolute; bottom: 80px; font-size: 1.2rem; font-style: italic; color: #ccc; }
+        
+        .arrow-next { position: absolute; right: 40px; bottom: 40px; font-size: 3rem; color: white; cursor: pointer; animation: bounceRight 1.5s infinite; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); transition: 0.3s; z-index: 100; }
+        .arrow-next:hover { color: var(--c-planet); transform: scale(1.2); }
+        @keyframes bounceRight { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(15px); } }
+
+        /* === 2. PRÉSENTATION DES 3 DIMENSIONS === */
+        #screen-teams { background: radial-gradient(circle at center, #112233 0%, #000 100%); text-align: center; padding: 20px; }
+        .teams-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 60px; color: white; }
+        .teams-container { display: flex; justify-content: center; gap: 40px; max-width: 1200px; flex-wrap: wrap; }
+        
+        .team-card { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 40px 20px; width: 280px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 15px 30px rgba(0,0,0,0.5); opacity: 0; transform: translateY(50px); }
+        .screen.active .team-card { animation: fadeUpCard 0.8s forwards; }
+        .screen.active .team-card:nth-child(1) { animation-delay: 0.2s; }
+        .screen.active .team-card:nth-child(2) { animation-delay: 0.5s; }
+        .screen.active .team-card:nth-child(3) { animation-delay: 0.8s; }
+        @keyframes fadeUpCard { to { opacity: 1; transform: translateY(0); } }
+
+        .team-svg-large { width: 120px; margin-bottom: 25px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.8)); }
+        .team-name { font-size: 1.4rem; font-weight: 900; margin-bottom: 15px; }
+        .team-desc { font-size: 1rem; color: #ccc; line-height: 1.4; margin-bottom: 15px; }
+        .team-focus { font-size: 0.85rem; font-style: italic; color: #888; }
+
+        /* === 3. L'APPLICATION (TERRAIN & CHAT) === */
+        #screen-app { padding-bottom: 80px; align-items: center; justify-content: flex-start; }
+        
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,10,0.95); border-top: 1px solid #333; display: flex; justify-content: space-around; padding: 15px 0; z-index: 2000; backdrop-filter: blur(10px); }
         .nav-item { color: #888; text-decoration: none; font-weight: bold; font-size: 1rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.3s; }
-        .nav-item.active { color: var(--fm-cyan); text-shadow: 0 0 10px rgba(0, 181, 226, 0.5); }
+        .nav-item.active { color: var(--c-planet); text-shadow: 0 0 10px rgba(26, 188, 156, 0.5); }
         
-        .page { display: none; width: 100%; min-height: 100vh; flex-direction: column; align-items: center; padding-top: 20px; }
-        .page.active { display: flex; }
+        .app-tab { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 20px; }
+        .app-tab.active { display: flex; animation: fadeIn 0.5s; }
 
-        /* === ÉCRAN DE CONNEXION === */
-        #login-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { background: #111; padding: 40px; border-radius: 15px; border: 1px solid var(--fm-cyan); text-align: center; width: 80%; max-width: 350px; }
-        input { display: block; margin: 15px auto; padding: 12px; border-radius: 8px; border: 1px solid #333; width: 85%; background: #000; color: white; text-align: center; font-size: 1rem; }
-        .btn-login { background: var(--fm-cyan); color: #000; font-weight: bold; padding: 12px 30px; margin-top: 10px; border: none; border-radius: 8px; cursor: pointer; width: 90%; font-size: 1rem; }
+        .header-app { text-align: center; padding: 10px; width: 100%; }
+        .header-app h1 { margin: 0; font-size: 2rem; letter-spacing: 2px; }
 
-        /* === HEADER === */
-        .header { text-align: center; padding: 10px; width: 100%; }
-        h1 { margin: 0; font-size: 1.8rem; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255,255,255,0.2); }
-        .live-badge { color: #ff4444; font-size: 0.8rem; font-weight: bold; animation: pulse 2s infinite; margin-top: 5px; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-
-        /* === LE TERRAIN 3D (AXONOMÉTRIQUE) === */
-        .scene-3d { perspective: 1200px; width: 95%; max-width: 800px; margin: 30px auto; position: relative; }
-        .pitch-container {
-            width: 100%; height: 500px; position: relative;
-            transform: rotateX(45deg); transform-style: preserve-3d;
-            box-shadow: 0 40px 60px rgba(0,0,0,0.8); border: 4px solid #333; border-radius: 10px;
-        }
-        .pitch {
-            position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--pitch-1) 0%, var(--pitch-1) 10%, var(--pitch-2) 10%, var(--pitch-2) 20%);
-            border: 2px solid var(--lines); overflow: hidden;
-        }
-        /* Marquages au sol */
+        /* LE TERRAIN 3D */
+        .scene-3d { perspective: 1200px; width: 95%; max-width: 900px; margin: 40px auto; position: relative; }
+        .pitch-container { width: 100%; height: 550px; position: relative; transform: rotateX(45deg); transform-style: preserve-3d; box-shadow: 0 40px 60px rgba(0,0,0,0.8); border: 4px solid #333; border-radius: 10px; }
+        .pitch { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--pitch-1) 0%, var(--pitch-1) 10%, var(--pitch-2) 10%, var(--pitch-2) 20%); border: 2px solid var(--lines); overflow: hidden; }
+        
+        /* Tracés */
         .pitch::before { content: ''; position: absolute; inset: 15px; border: 2px solid var(--lines); pointer-events: none; }
         .mid-line { position: absolute; left: 50%; top: 15px; bottom: 15px; width: 2px; background: var(--lines); transform: translateX(-50%); pointer-events: none; }
-        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid var(--lines); border-radius: 50%; pointer-events: none; }
-        .surface { position: absolute; top: 50%; transform: translateY(-50%); width: 100px; height: 200px; border: 2px solid var(--lines); pointer-events: none; }
+        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; border: 2px solid var(--lines); border-radius: 50%; pointer-events: none; }
+        .surface { position: absolute; top: 50%; transform: translateY(-50%); width: 120px; height: 220px; border: 2px solid var(--lines); pointer-events: none; }
         .surface-left { left: 15px; border-left: none; } .surface-right { right: 15px; border-right: none; }
+        .bench { position: absolute; top: -70px; left: 50%; transform: translateX(-50%); width: 280px; height: 60px; background: rgba(30,30,30,0.9); border: 2px solid #555; border-radius: 8px; display: flex; justify-content: center; gap: 30px; align-items: center; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
 
-        /* Banc de touche (au-dessus du terrain) */
-        .bench { position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 250px; height: 50px; background: rgba(30,30,30,0.9); border: 2px solid #555; border-radius: 8px; display: flex; justify-content: center; gap: 30px; align-items: center; z-index: 20; }
-
-        /* === LES MAILLOTS (JOUEURS) === */
-        .player {
-            position: absolute; width: 50px; height: 50px; transform: translate(-50%, -50%) rotateX(-45deg); 
-            cursor: pointer; transition: 0.3s; z-index: 10; display: flex; flex-direction: column; align-items: center; 
-            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.6));
-        }
-        .player:hover { transform: translate(-50%, -60%) rotateX(-45deg) scale(1.1); filter: drop-shadow(0 15px 10px rgba(0,0,0,0.8)); }
+        /* LES JOUEURS (MAILLOTS) */
+        .player { position: absolute; width: 55px; height: 55px; transform: translate(-50%, -50%) rotateX(-45deg); cursor: pointer; transition: 0.3s; z-index: 10; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.6)); }
+        .player:hover { transform: translate(-50%, -60%) rotateX(-45deg) scale(1.1); filter: drop-shadow(0 15px 10px rgba(0,0,0,0.8)); z-index: 100; }
         .player-svg { width: 100%; height: 100%; transition: 0.3s; filter: grayscale(0.8) opacity(0.6); }
-        .player-num { font-weight: bold; font-size: 0.75rem; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 10px; border: 1px solid #444; position: absolute; bottom: -12px; color: white; }
+        .player-num { font-weight: bold; font-size: 0.8rem; background: rgba(0,0,0,0.9); padding: 2px 6px; border-radius: 10px; border: 1px solid #444; position: absolute; bottom: -15px; color: white; }
 
-        /* Maillots Validés (Lumineux) */
         .player.active .player-svg { filter: grayscale(0) opacity(1); }
-        .player.active.fm .player-svg { filter: drop-shadow(0 0 15px var(--fm-cyan)); }
-        .player.active.eco .player-svg { filter: drop-shadow(0 0 15px var(--eco-green)); }
-        .player.active.part .player-svg { filter: drop-shadow(0 0 15px var(--partner-gold)); }
+        .player.active.people .player-svg { filter: drop-shadow(0 0 15px var(--c-people)); }
+        .player.active.planet .player-svg { filter: drop-shadow(0 0 15px var(--c-planet)); }
+        .player.active.partner .player-svg { filter: drop-shadow(0 0 15px var(--c-partner)); }
 
-        /* Animation de la Passe */
-        .passe-anim { position: absolute; font-size: 20px; z-index: 50; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; text-shadow: 0 10px 5px rgba(0,0,0,0.5); }
+        .passe-anim { position: absolute; font-size: 25px; z-index: 50; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; text-shadow: 0 10px 5px rgba(0,0,0,0.5); }
 
-        /* === MODAL (BULLE D'OBJECTIF) === */
-        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 4000; backdrop-filter: blur(5px); justify-content: center; align-items: center; }
-        .modal-box { background: #111; border: 1px solid #333; padding: 30px; border-radius: 15px; width: 85%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
-        .modal-cat { font-size: 0.8rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .modal-title { font-size: 1.1rem; color: #fff; font-weight: bold; line-height: 1.4; margin-bottom: 25px; }
-        .btn-valider { background: var(--fm-cyan); color: #000; font-weight: bold; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 10px; }
-        .btn-fermer { background: transparent; color: #888; border: none; cursor: pointer; text-decoration: underline; }
+        /* === MODAL STRATÉGIQUE === */
+        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 6000; backdrop-filter: blur(5px); justify-content: center; align-items: center; }
+        .modal-box { background: linear-gradient(145deg, #111, #0a0a0a); border: 1px solid #333; padding: 35px 25px; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .modal-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .modal-cat { font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+        .modal-title { font-size: 1.2rem; color: #fff; line-height: 1.5; margin-bottom: 30px; }
+        .btn-valider { background: var(--c-planet); color: #000; font-weight: bold; padding: 15px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 15px; font-size: 1rem; transition: 0.2s; }
+        .btn-valider:hover { box-shadow: 0 0 20px rgba(26, 188, 156, 0.5); transform: scale(1.02); }
+        .btn-fermer { background: transparent; color: #888; border: none; cursor: pointer; text-decoration: underline; font-size: 0.9rem; }
 
-        /* === PAGE CHAT === */
-        .chat-box { width: 90%; max-width: 600px; background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; height: 60vh; }
-        .messages { flex: 1; background: #000; border-radius: 8px; padding: 15px; overflow-y: auto; margin-bottom: 10px; }
-        .msg-line { margin-bottom: 10px; font-size: 0.9rem; line-height: 1.4; border-bottom: 1px solid #1a1a1a; padding-bottom: 8px; }
-        .msg-name { font-weight: bold; margin-right: 5px; }
-        .chat-inputs { display: flex; flex-direction: column; gap: 10px; }
-        .chat-inputs input { background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; font-size: 0.9rem; }
-        .btn-envoyer { background: var(--fm-cyan); color: #000; font-weight: bold; border: none; border-radius: 8px; padding: 12px; cursor: pointer; }
+        /* === CHAT === */
+        .chat-box { width: 90%; max-width: 700px; background: #111; border: 1px solid #333; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; height: 65vh; margin-top: 20px; }
+        .messages { flex: 1; background: #000; border-radius: 8px; padding: 20px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #222; }
+        .msg-line { margin-bottom: 12px; font-size: 1rem; line-height: 1.5; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px; }
+        .msg-name { font-weight: bold; margin-right: 8px; }
+        .chat-inputs { display: flex; gap: 10px; }
+        .chat-inputs input { background: #222; border: 1px solid #444; color: white; padding: 15px; border-radius: 8px; font-size: 1rem; }
+        #chat-name { width: 130px; } #chat-text { flex: 1; }
+        .btn-envoyer { background: var(--c-planet); color: #000; font-weight: bold; border: none; border-radius: 8px; padding: 0 25px; cursor: pointer; }
 
         canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none; }
-        .btn-retour-action { background: transparent; border: 1px solid #ff9800; color: #ff9800; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        .feedback { position: absolute; color: white; font-weight: 900; font-size: 1rem; text-transform: uppercase; animation: floatUp 1.2s forwards; background: rgba(0,0,0,0.9); padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); white-space: nowrap; pointer-events: none; z-index: 100; transform-origin: center; }
+        @keyframes floatUp { 0% { opacity: 0; transform: translateY(-30px) scale(0.8); } 20% { opacity: 1; transform: translateY(-50px) scale(1.1); } 100% { opacity: 0; transform: translateY(-80px) scale(1); } }
+        .btn-retour-action { background: transparent; border: 1px solid #ff9800; color: #ff9800; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 30px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
+    <div id="screen-login" class="screen active">
         <div class="login-box">
-            <h2 style="color:var(--fm-cyan); margin-top:0;">FM LOGISTIC 2027</h2>
-            <p style="font-size:0.8rem; color:#aaa;">Portail Stratégique Sécurisé</p>
+            <h2 style="color:var(--c-planet); margin-top:0;">FM LOGISTIC</h2>
+            <p style="font-size:0.9rem; color:#aaa;">Portail Stratégique Sécurisé</p>
             <input type="text" id="user" placeholder="Identifiant (admin)">
             <input type="password" id="pass" placeholder="Mot de passe">
             <button class="btn-login" onclick="checkLogin()">Accéder au Plan</button>
@@ -112,59 +144,79 @@
         </div>
     </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchPage('page-terrain', this)">🏟️<span>Tactique</span></div>
-        <div class="nav-item" onclick="switchPage('page-chat', this)">💬<span>Discussion</span></div>
+    <div id="screen-intro" class="screen">
+        <div class="spotlight spot-left"></div>
+        <div class="spotlight spot-right"></div>
+        <h1 class="intro-title">FONTENAY ARENA 2027</h1>
+        <div class="intro-subtitle">La Coupe du Monde de notre performance</div>
+        <div class="intro-footer">Explorer pour construire durablement.</div>
+        <div class="arrow-next" onclick="goToScreen('screen-teams')">➔</div>
+    </div>
+
+    <div id="screen-teams" class="screen">
+        <div class="teams-title">Un plan de jeu en 3 dimensions</div>
+        <div class="teams-container" id="teams-cards">
+            </div>
+        <div class="arrow-next" onclick="goToScreen('screen-app'); initJeu();">➔</div>
+    </div>
+
+    <div id="screen-app" class="screen">
+        
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('tab-terrain', this)">🏟️<span>Tactique</span></div>
+            <div class="nav-item" onclick="switchTab('tab-chat', this)">💬<span>Collaboration</span></div>
+        </div>
+
+        <div id="tab-terrain" class="app-tab active">
+            <div class="header-app">
+                <h1>SCHÉMA TACTIQUE</h1>
+                <div class="live-badge">🔴 En Direct avec l'équipe</div>
+            </div>
+
+            <div class="scene-3d">
+                <div class="pitch-container">
+                    <div class="bench" id="bench-container"></div>
+                    <div class="pitch" id="arena">
+                        <div class="surface surface-left"></div>
+                        <div class="mid-line"></div>
+                        <div class="center-circle"></div>
+                        <div class="surface surface-right"></div>
+                        <svg id="svg-lines" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;"></svg>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-retour-action" onclick="annulerDerniereAction()">↩️ Annuler la dernière passe</button>
+        </div>
+
+        <div id="tab-chat" class="app-tab">
+            <div class="header-app">
+                <h1>NOTES DE L'ÉQUIPE</h1>
+            </div>
+            <div class="chat-box">
+                <div class="messages" id="chat-messages"></div>
+                <div class="chat-inputs">
+                    <input type="text" id="chat-name" placeholder="Votre prénom">
+                    <input type="text" id="chat-text" placeholder="Tapez votre message...">
+                    <button class="btn-envoyer" onclick="envoyerMessage()">Publier</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="modal-overlay">
         <div class="modal-box">
+            <div class="modal-icon" id="modal-icon">⚽</div>
             <div class="modal-cat" id="modal-cat">Catégorie</div>
-            <div class="modal-title" id="modal-title">Description de l'objectif...</div>
+            <div class="modal-title" id="modal-title">Description...</div>
             <button class="btn-valider" onclick="confirmerValidation()">VALIDER CETTE STRATÉGIE</button>
             <button class="btn-fermer" onclick="fermerModal()">Fermer</button>
-        </div>
-    </div>
-
-    <div id="page-terrain" class="page active">
-        <div class="header">
-            <h1>PLAN TACTIQUE 2027</h1>
-            <div class="live-badge">🔴 Synchro Temps Réel</div>
-        </div>
-
-        <div class="scene-3d">
-            <div class="pitch-container">
-                <div class="bench" id="bench-container"></div>
-                <div class="pitch" id="arena">
-                    <div class="surface surface-left"></div>
-                    <div class="mid-line"></div>
-                    <div class="center-circle"></div>
-                    <div class="surface surface-right"></div>
-                    <svg id="svg-lines" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;"></svg>
-                    </div>
-            </div>
-        </div>
-        <button class="btn-retour-action" onclick="annulerDerniereAction()">↩️ Annuler la dernière passe</button>
-    </div>
-
-    <div id="page-chat" class="page">
-        <div class="header">
-            <h1>NOTES DE L'ÉQUIPE</h1>
-        </div>
-        <div class="chat-box">
-            <div class="messages" id="chat-messages"></div>
-            <div class="chat-inputs">
-                <input type="text" id="chat-name" placeholder="Votre prénom">
-                <input type="text" id="chat-text" placeholder="Tapez votre message...">
-                <button class="btn-envoyer" onclick="envoyerMessage()">Publier</button>
-            </div>
         </div>
     </div>
 
     <canvas id="confetti"></canvas>
 
     <script>
-        // === CLÉS FIREBASE (RÉPARÉES) ===
+        // === CLÉS FIREBASE ===
         const firebaseConfig = {
             apiKey: "AIzaSyCJGFiEeRAa7Kar7YYilrtxirQbG5Yxo4E",
             authDomain: "projet-2026-be8d4.firebaseapp.com",
@@ -177,55 +229,81 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // === AUDIOS ===
+        // Audios
         const sonPasse = new Audio('https://assets.mixkit.co/active_storage/sfx/2143/2143-preview.mp3'); 
         const sonValidation = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'); 
         const sonVictoire = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'); 
 
-        // === DESIGN DES MAILLOTS (SVGs Pros) ===
-        const svgFM = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#0033a0" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">👥</text></svg>`;
-        const svgPlanete = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#2ecc71" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">🌍</text></svg>`;
-        const svgPartenaire = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#f1c40f" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#000" text-anchor="middle">🤝</text></svg>`;
+        // === DESIGN DES MAILLOTS (Couleurs Mises à jour) ===
+        const svgPeople = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#e81f76" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">👥</text></svg>`;
+        const svgPlanet = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#1abc9c" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">🌍</text></svg>`;
+        const svgPartner = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#3498db" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">🤝</text></svg>`;
 
-        // === DONNÉES DES 13 MAILLOTS (Résumés Ultra Précis) ===
+        // === DONNÉES DES MAILLOTS (Résumés Ultra Précis) ===
         const joueurs = [
-            { id: 1, type: "fm", svg: svgFM, x: '10%', y: '50%', titre: "DÉVELOPPER LES COMPÉTENCES ET L'EMPLOYABILITÉ DES ÉQUIPES" },
-            { id: 2, type: "fm", svg: svgFM, x: '25%', y: '20%', titre: "RITUELS MANAGÉRIAUX POUR LA SÉCURITÉ ET LUTTE CONTRE L'ABSENTÉISME" },
-            { id: 3, type: "eco", svg: svgPlanete, x: '25%', y: '40%', titre: "RÉDUIRE L'EMPREINTE CARBONE DE L'ENSEMBLE DES OPÉRATIONS DE 20%" },
-            { id: 4, type: "eco", svg: svgPlanete, x: '25%', y: '60%', titre: "DÉPLOYER DES FLOTTES DE TRANSPORT ÉCO-RESPONSABLES ET ÉLECTRIQUES" },
-            { id: 5, type: "fm", svg: svgFM, x: '25%', y: '80%', titre: "PROGRAMME DE MENTORAT ET TRANSMISSION DES SAVOIRS EN INTERNE" },
-            { id: 6, type: "part", svg: svgPartenaire, x: '50%', y: '25%', titre: "RENFORCER LA COLLABORATION CLIENTS ET OPTIMISER LA SUPPLY CHAIN" },
-            { id: 7, type: "fm", svg: svgFM, x: '50%', y: '50%', titre: "PROMOUVOIR L'INCLUSION, LA PARITÉ ET LA DIVERSITÉ AU QUOTIDIEN" },
-            { id: 8, type: "part", svg: svgPartenaire, x: '50%', y: '75%', titre: "CO-CRÉATION D'INNOVATIONS LOGISTIQUES AVEC NOS PARTENAIRES STRATÉGIQUES" },
-            { id: 9, type: "eco", svg: svgPlanete, x: '75%', y: '25%', titre: "OBJECTIF ZÉRO DÉCHET SUR LA TOTALITÉ DE NOS SITES" },
-            { id: 10, type: "part", svg: svgPartenaire, x: '75%', y: '50%', titre: "AMÉLIORER LA PRODUCTIVITÉ OPÉRATIONNELLE ET LA QUALITÉ DE SERVICE" },
-            { id: 11, type: "fm", svg: svgFM, x: '75%', y: '75%', titre: "GARANTIR LE BIEN-ÊTRE ET LA SANTÉ AU TRAVAIL DES COLLABORATEURS" },
-            { id: 12, type: "part", svg: svgPartenaire, bench: true, titre: "FORGING PARTNERSHIPS FOR LOGISTICS INNOVATION AND MARKET ANTICIPATION" },
-            { id: 13, type: "eco", svg: svgPlanete, bench: true, titre: "SYNERGIES INTERNATIONALES POUR UNE LOGISTIQUE DURABLE ET CIRCULAIRE" }
+            { id: 1, type: "people", svg: svgPeople, x: '10%', y: '50%', titre: "DÉVELOPPER LES COMPÉTENCES ET L'EMPLOYABILITÉ DES ÉQUIPES" },
+            { id: 2, type: "people", svg: svgPeople, x: '25%', y: '20%', titre: "RITUELS MANAGÉRIAUX POUR LA SÉCURITÉ ET LUTTE CONTRE L'ABSENTÉISME" },
+            { id: 3, type: "planet", svg: svgPlanet, x: '25%', y: '40%', titre: "RÉDUIRE L'EMPREINTE CARBONE DE L'ENSEMBLE DES OPÉRATIONS DE 20%" },
+            { id: 4, type: "planet", svg: svgPlanet, x: '25%', y: '60%', titre: "DÉPLOYER DES FLOTTES DE TRANSPORT ÉCO-RESPONSABLES ET ÉLECTRIQUES" },
+            { id: 5, type: "people", svg: svgPeople, x: '25%', y: '80%', titre: "PROGRAMME DE MENTORAT ET TRANSMISSION DES SAVOIRS EN INTERNE" },
+            { id: 6, type: "partner", svg: svgPartner, x: '50%', y: '25%', titre: "RENFORCER LA COLLABORATION CLIENTS ET OPTIMISER LA SUPPLY CHAIN" },
+            { id: 7, type: "people", svg: svgPeople, x: '50%', y: '50%', titre: "PROMOUVOIR L'INCLUSION, LA PARITÉ ET LA DIVERSITÉ AU QUOTIDIEN" },
+            { id: 8, type: "partner", svg: svgPartner, x: '50%', y: '75%', titre: "CO-CRÉATION D'INNOVATIONS LOGISTIQUES AVEC NOS PARTENAIRES STRATÉGIQUES" },
+            { id: 9, type: "planet", svg: svgPlanet, x: '75%', y: '25%', titre: "OBJECTIF ZÉRO DÉCHET SUR LA TOTALITÉ DE NOS SITES" },
+            { id: 10, type: "partner", svg: svgPartner, x: '75%', y: '50%', titre: "AMÉLIORER LA PRODUCTIVITÉ OPÉRATIONNELLE ET LA QUALITÉ DE SERVICE" },
+            { id: 11, type: "people", svg: svgPeople, x: '75%', y: '75%', titre: "GARANTIR LE BIEN-ÊTRE ET LA SANTÉ AU TRAVAIL DES COLLABORATEURS" },
+            { id: 12, type: "partner", svg: svgPartner, bench: true, titre: "FORGING PARTNERSHIPS FOR LOGISTICS INNOVATION AND MARKET ANTICIPATION" },
+            { id: 13, type: "planet", svg: svgPlanet, bench: true, titre: "SYNERGIES INTERNATIONALES POUR UNE LOGISTIQUE DURABLE ET CIRCULAIRE" }
         ];
 
         let state = []; 
         let maillotEnAttente = null; 
         let aGagne = false;
+        let jeuInitialise = false;
 
-        // Navigation
-        function switchPage(pageId, btn) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            btn.classList.add('active');
-        }
-
-        // Connexion
+        // Navigation Principale
         function checkLogin() {
             if(document.getElementById('user').value.trim() === 'admin' && document.getElementById('pass').value.trim() === 'admin') {
-                document.getElementById('login-screen').style.display = 'none';
-                initJeu();
+                goToScreen('screen-intro');
             } else { document.getElementById('error').innerText = "Identifiants incorrects."; }
         }
 
-        // Initialisation
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Construire la page 2 (Les 3 Dimensions)
+        const teamsData = [
+            { nom: "DÉFENSE (PEOPLE)", color: "var(--c-people)", desc: "Protéger notre base et sécuriser nos talents.", focus: "Sécurité & Conditions de travail", svg: svgPeople },
+            { nom: "MILIEU (PLANET)", color: "var(--c-planet)", desc: "Maîtriser le terrain et optimiser notre énergie.", focus: "Empreinte Carbone & Compétences", svg: svgPlanet },
+            { nom: "ATTAQUE (PARTNERS)", color: "var(--c-partner)", desc: "Marquer des points avec notre écosystème.", focus: "Performance Clients & Impact Social", svg: svgPartner }
+        ];
+        
+        const teamsContainer = document.getElementById('teams-cards');
+        teamsData.forEach(t => {
+            teamsContainer.innerHTML += `
+                <div class="team-card">
+                    <div class="team-svg-large">${t.svg}</div>
+                    <div class="team-name" style="color:${t.color}">${t.nom}</div>
+                    <div class="team-desc">${t.desc}</div>
+                    <div class="team-focus">Focus : ${t.focus}</div>
+                </div>
+            `;
+        });
+
+        // Initialisation de la Tactique
         function initJeu() {
+            if(jeuInitialise) return;
+            jeuInitialise = true;
+
             const pitch = document.getElementById('arena');
             const bench = document.getElementById('bench-container');
 
@@ -245,7 +323,7 @@
                 }
             });
 
-            // Écoute Firebase
+            // Écoute Tactique
             db.ref('fm_tactique_2027').on('value', (snapshot) => {
                 const data = snapshot.val();
                 state = []; 
@@ -280,21 +358,17 @@
             });
         }
 
-        function genererCouleur(nom) {
-            let hash = 0; for (let i=0; i<nom.length; i++) hash = nom.charCodeAt(i) + ((hash << 5) - hash);
-            return `hsl(${Math.abs(hash % 360)}, 80%, 65%)`;
-        }
-
-        // Modal
+        // Système de Validation
         function ouvrirModal(j) {
             if(state.includes(j.id)) return;
             maillotEnAttente = j.id;
             
-            let icon = "👥 People"; let col = "var(--fm-cyan)";
-            if(j.type === "eco") { icon = "🌍 Environnement"; col = "var(--eco-green)"; }
-            if(j.type === "part") { icon = "🤝 Partenaire"; col = "var(--partner-gold)"; }
+            let icon = "👥"; let nomCat = "DÉFENSE (PEOPLE)"; let col = "var(--c-people)";
+            if(j.type === "planet") { icon = "🌍"; nomCat = "MILIEU (PLANET)"; col = "var(--c-planet)"; }
+            if(j.type === "partner") { icon = "🤝"; nomCat = "ATTAQUE (PARTNERS)"; col = "var(--c-partner)"; }
 
-            document.getElementById('modal-cat').innerHTML = `<span style="color:${col}">${icon}</span>`;
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-cat').innerHTML = `<span style="color:${col}">${nomCat}</span>`;
             document.getElementById('modal-title').innerText = j.titre;
             document.getElementById('modal-overlay').style.display = 'flex';
         }
@@ -322,13 +396,12 @@
             const balle = document.createElement('div');
             balle.className = 'passe-anim'; balle.innerText = "⚽";
             
-            // Calculs relatifs au terrain pour respecter la 3D
-            let sX = r1.left - arena.left + r1.width/2 - 10; let sY = r1.top - arena.top + r1.height/2 - 10;
-            let eX = r2.left - arena.left + r2.width/2 - 10; let eY = r2.top - arena.top + r2.height/2 - 10;
+            let sX = r1.left - arena.left + r1.width/2 - 12; let sY = r1.top - arena.top + r1.height/2 - 12;
+            let eX = r2.left - arena.left + r2.width/2 - 12; let eY = r2.top - arena.top + r2.height/2 - 12;
 
             balle.style.left = sX + 'px'; balle.style.top = sY + 'px';
             document.getElementById('arena').appendChild(balle);
-            balle.getBoundingClientRect(); // Force le dessin
+            balle.getBoundingClientRect();
 
             balle.style.left = eX + 'px'; balle.style.top = eY + 'px';
 
@@ -336,6 +409,12 @@
         }
 
         function validerOfficiellement(id) {
+            const mots = ["Excellent !", "Stratégie Validée !", "Beau travail !", "Super passe !", "Bravo !"];
+            const f = document.createElement('div');
+            f.className = 'feedback'; f.innerText = mots[Math.floor(Math.random() * mots.length)];
+            document.getElementById(`joueur-${id}`).appendChild(f);
+            setTimeout(() => f.remove(), 1200);
+
             sonValidation.currentTime = 0; sonValidation.play().catch(e=>{});
             db.ref('fm_tactique_2027/' + id).set({ timestamp: Date.now() });
         }
@@ -350,17 +429,6 @@
                 }
             });
         }
-
-        // Chat
-        function envoyerMessage() {
-            const nom = document.getElementById('chat-name').value.trim() || "Anonyme";
-            const txt = document.getElementById('chat-text').value.trim();
-            if(txt !== "") { 
-                db.ref('fm_chat_2027').push({ name: nom, text: txt, time: Date.now() }); 
-                document.getElementById('chat-text').value = ""; 
-            }
-        }
-        document.getElementById('chat-text').addEventListener('keypress', (e) => { if(e.key==='Enter') envoyerMessage(); });
 
         // Lignes
         function drawLines() {
@@ -380,6 +448,21 @@
             }
         }
         window.addEventListener('resize', drawLines);
+
+        // Chat Tools
+        function envoyerMessage() {
+            const nom = document.getElementById('chat-name').value.trim() || "Anonyme";
+            const txt = document.getElementById('chat-text').value.trim();
+            if(txt !== "") { 
+                db.ref('fm_chat_2027').push({ name: nom, text: txt, time: Date.now() }); 
+                document.getElementById('chat-text').value = ""; 
+            }
+        }
+        document.getElementById('chat-text').addEventListener('keypress', (e) => { if(e.key==='Enter') envoyerMessage(); });
+        function genererCouleur(nom) {
+            let hash = 0; for (let i=0; i<nom.length; i++) hash = nom.charCodeAt(i) + ((hash << 5) - hash);
+            return `hsl(${Math.abs(hash % 360)}, 80%, 65%)`;
+        }
 
         // Confettis
         function launchConfetti() {
