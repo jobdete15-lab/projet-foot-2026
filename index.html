@@ -3,228 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Logistique - Arena Pro Collaborative</title>
+    <title>FM Logistic - Tactique CAP 2027</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         :root {
-            --bleu: #00d2ff; --vert: #39ff14; --rose: #ff007f;
-            --pelouse1: #0a2412; --pelouse2: #0d2d16; --ligne: rgba(255,255,255,0.4);
+            --fm-blue: #0033a0; --fm-cyan: #00b5e2; 
+            --eco-green: #2ecc71; --partner-gold: #f1c40f;
+            --pitch-1: #0e3b1c; --pitch-2: #124d25; --lines: rgba(255,255,255,0.4);
+            --bg-dark: #07090b;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #020503; color: white; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; padding-bottom: 50px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+
+        /* === BARRE DE NAVIGATION (STYLE APP MOBILE/WEB) === */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,10,0.95); border-top: 1px solid #333; display: flex; justify-content: space-around; padding: 15px 0; z-index: 2000; backdrop-filter: blur(10px); }
+        .nav-item { color: #888; text-decoration: none; font-weight: bold; font-size: 1rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.3s; }
+        .nav-item.active { color: var(--fm-cyan); text-shadow: 0 0 10px rgba(0, 181, 226, 0.5); }
+        
+        .page { display: none; width: 100%; min-height: 100vh; flex-direction: column; align-items: center; padding-top: 20px; }
+        .page.active { display: flex; }
 
         /* === ÉCRAN DE CONNEXION === */
-        #login-screen { position: fixed; inset: 0; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { background: rgba(10, 10, 10, 0.9); padding: 40px 20px; border-radius: 15px; border: 1px solid var(--vert); text-align: center; box-shadow: 0 10px 40px rgba(57, 255, 20, 0.15); width: 85%; max-width: 400px; }
+        #login-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { background: #111; padding: 40px; border-radius: 15px; border: 1px solid var(--fm-cyan); text-align: center; width: 80%; max-width: 350px; }
         input { display: block; margin: 15px auto; padding: 12px; border-radius: 8px; border: 1px solid #333; width: 85%; background: #000; color: white; text-align: center; font-size: 1rem; }
-        .btn-login { background: var(--vert); color: #000; font-weight: bold; padding: 15px 30px; margin-top: 15px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 90%; font-size: 1.1rem; transition: 0.3s; }
-        .btn-login:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--vert); }
+        .btn-login { background: var(--fm-cyan); color: #000; font-weight: bold; padding: 12px 30px; margin-top: 10px; border: none; border-radius: 8px; cursor: pointer; width: 90%; font-size: 1rem; }
 
         /* === HEADER === */
-        .header { text-align: center; padding: 20px; width: 100%; max-width: 1000px; }
-        h1 { margin: 0 0 5px 0; font-size: 2rem; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        .live-badge { color: #ff4444; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; animation: pulse 2s infinite; display: inline-flex; align-items: center; gap: 8px; }
-        .point-rouge { width: 10px; height: 10px; background: red; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px red; }
+        .header { text-align: center; padding: 10px; width: 100%; }
+        h1 { margin: 0; font-size: 1.8rem; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .live-badge { color: #ff4444; font-size: 0.8rem; font-weight: bold; animation: pulse 2s infinite; margin-top: 5px; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        
-        .maillot-container { display: flex; justify-content: center; gap: 40px; }
-        .jersey { display: flex; flex-direction: column; align-items: center; }
-        .jersey-svg { width: 65px; filter: drop-shadow(0 8px 6px rgba(0,0,0,0.7)); transition: transform 0.3s; }
-        .jersey:hover .jersey-svg { transform: translateY(-5px); }
-        .jersey span { font-size: 0.85rem; font-weight: 800; margin-top: 8px; color: white; opacity: 0.9; }
 
-        /* === LE STADE (HORIZONTAL AVEC CAGES) === */
-        .stade-container { width: 95%; max-width: 1000px; margin: 20px auto; }
-        .stade {
-            position: relative; width: 100%; height: 500px;
-            background: repeating-linear-gradient(90deg, var(--pelouse1) 0px, var(--pelouse1) 50px, var(--pelouse2) 50px, var(--pelouse2) 100px);
-            border: 3px solid #555; border-radius: 10px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9) inset, 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; transition: 1s;
+        /* === LE TERRAIN 3D (AXONOMÉTRIQUE) === */
+        .scene-3d { perspective: 1200px; width: 95%; max-width: 800px; margin: 30px auto; position: relative; }
+        .pitch-container {
+            width: 100%; height: 500px; position: relative;
+            transform: rotateX(45deg); transform-style: preserve-3d;
+            box-shadow: 0 40px 60px rgba(0,0,0,0.8); border: 4px solid #333; border-radius: 10px;
         }
-        .stade.victory { box-shadow: 0 0 60px var(--vert), 0 20px 50px rgba(0,0,0,0.9) inset; border-color: var(--vert); }
-
-        /* Lignes du terrain */
-        .stade::before { content: ''; position: absolute; inset: 15px; border: 2px solid var(--ligne); pointer-events: none; }
-        .mid-line { position: absolute; left: 50%; top: 15px; bottom: 15px; width: 2px; background: var(--ligne); pointer-events: none; transform: translateX(-50%); }
-        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; border: 2px solid var(--ligne); border-radius: 50%; pointer-events: none; }
-        
-        /* Cages et surfaces */
-        .surface { position: absolute; top: 50%; transform: translateY(-50%); width: 120px; height: 220px; border: 2px solid var(--ligne); pointer-events: none; }
-        .surface-left { left: 15px; border-left: none; }
-        .surface-right { right: 15px; border-right: none; }
-        
-        .cage { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; border: 3px solid white; background: rgba(255,255,255,0.1); pointer-events: none; }
-        .cage-left { left: -3px; border-left: none; }
-        .cage-right { right: -3px; border-right: none; }
-
-        /* === BALLONS 3D === */
-        #game-content { display: flex; width: 100%; height: 100%; position: relative; z-index: 10; align-items: center; justify-content: space-evenly; }
-        .colonne { display: flex; flex-direction: column; gap: 30px; }
-
-        .obj-row { position: relative; cursor: pointer; transition: 0.3s; }
-        .obj-row:hover .ball-3d { transform: scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.9); }
-
-        .ball-3d {
-            width: 100px; height: 100px; 
-            background: radial-gradient(circle at 35% 35%, #444, #111);
-            border-radius: 50%; border: 2px solid #555;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 -10px 20px rgba(0,0,0,0.6); 
-            display: flex; align-items: center; justify-content: center; text-align: center;
-            font-size: 0.8rem; font-weight: bold; color: #aaa; padding: 10px; box-sizing: border-box; line-height: 1.2;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;
+        .pitch {
+            position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--pitch-1) 0%, var(--pitch-1) 10%, var(--pitch-2) 10%, var(--pitch-2) 20%);
+            border: 2px solid var(--lines); overflow: hidden;
         }
-        .ball-3d::after { content: ''; position: absolute; top: 5px; left: 15%; width: 70%; height: 25%; background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent); border-radius: 50%; pointer-events: none; }
-        
-        .active .ball-3d { color: white; transform: scale(1.1) !important; border: 2px solid white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .active.bleu .ball-3d { background: radial-gradient(circle at 35% 35%, #666, var(--bleu)); box-shadow: 0 0 30px var(--bleu), inset 0 -10px 20px rgba(0,0,0,0.4); }
-        .active.vert .ball-3d { background: radial-gradient(circle at 35% 35%, #666, var(--vert)); box-shadow: 0 0 30px var(--vert), inset 0 -10px 20px rgba(0,0,0,0.4); }
-        .active.rose .ball-3d { background: radial-gradient(circle at 35% 35%, #666, var(--rose)); box-shadow: 0 0 30px var(--rose), inset 0 -10px 20px rgba(0,0,0,0.4); }
+        /* Marquages au sol */
+        .pitch::before { content: ''; position: absolute; inset: 15px; border: 2px solid var(--lines); pointer-events: none; }
+        .mid-line { position: absolute; left: 50%; top: 15px; bottom: 15px; width: 2px; background: var(--lines); transform: translateX(-50%); pointer-events: none; }
+        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid var(--lines); border-radius: 50%; pointer-events: none; }
+        .surface { position: absolute; top: 50%; transform: translateY(-50%); width: 100px; height: 200px; border: 2px solid var(--lines); pointer-events: none; }
+        .surface-left { left: 15px; border-left: none; } .surface-right { right: 15px; border-right: none; }
 
-        /* Animation des mots d'encouragement */
-        .feedback {
-            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
-            color: white; font-weight: 900; font-size: 1rem; text-transform: uppercase;
-            animation: floatUp 1.2s forwards; background: rgba(0,0,0,0.9); padding: 5px 12px; border-radius: 6px; 
-            border: 1px solid rgba(255,255,255,0.3); white-space: nowrap; pointer-events: none; z-index: 20;
+        /* Banc de touche (au-dessus du terrain) */
+        .bench { position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 250px; height: 50px; background: rgba(30,30,30,0.9); border: 2px solid #555; border-radius: 8px; display: flex; justify-content: center; gap: 30px; align-items: center; z-index: 20; }
+
+        /* === LES MAILLOTS (JOUEURS) === */
+        .player {
+            position: absolute; width: 50px; height: 50px; transform: translate(-50%, -50%) rotateX(-45deg); 
+            cursor: pointer; transition: 0.3s; z-index: 10; display: flex; flex-direction: column; align-items: center; 
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.6));
         }
-        @keyframes floatUp { 0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); } 20% { opacity: 1; transform: translate(-50%, -20px) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -60px) scale(1); } }
+        .player:hover { transform: translate(-50%, -60%) rotateX(-45deg) scale(1.1); filter: drop-shadow(0 15px 10px rgba(0,0,0,0.8)); }
+        .player-svg { width: 100%; height: 100%; transition: 0.3s; filter: grayscale(0.8) opacity(0.6); }
+        .player-num { font-weight: bold; font-size: 0.75rem; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 10px; border: 1px solid #444; position: absolute; bottom: -12px; color: white; }
 
-        /* Animation de la balle qui fait la passe */
-        .passe-anim {
-            position: absolute; font-size: 35px; z-index: 50; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5)); pointer-events: none;
-        }
+        /* Maillots Validés (Lumineux) */
+        .player.active .player-svg { filter: grayscale(0) opacity(1); }
+        .player.active.fm .player-svg { filter: drop-shadow(0 0 15px var(--fm-cyan)); }
+        .player.active.eco .player-svg { filter: drop-shadow(0 0 15px var(--eco-green)); }
+        .player.active.part .player-svg { filter: drop-shadow(0 0 15px var(--partner-gold)); }
 
-        /* === POPUP === */
-        #popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
-        .popup-box { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; padding: 25px; border: 2px solid var(--vert); border-radius: 12px; text-align: center; z-index: 1501; width: 80%; max-width: 300px; box-shadow: 0 0 30px rgba(57, 255, 20, 0.3); }
-        .popup-box h3 { margin-top: 0; font-size: 1.1rem; }
-        .btn-group { display: flex; justify-content: space-around; margin-top: 20px; }
-        .btn-pop { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-oui { background: var(--vert); color: black; }
-        .btn-non { background: #ff4444; color: white; }
+        /* Animation de la Passe */
+        .passe-anim { position: absolute; font-size: 20px; z-index: 50; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; text-shadow: 0 10px 5px rgba(0,0,0,0.5); }
 
-        /* === ZONE COLLABORATIVE (LE CHAT & RETOUR) === */
-        .collab-section { width: 95%; max-width: 1000px; display: flex; gap: 20px; margin-top: 20px; }
-        @media (max-width: 768px) { .collab-section { flex-direction: column; } }
-        
-        .chat-box { flex: 2; background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; height: 250px; }
-        .chat-box h3 { margin: 0 0 10px 0; color: var(--bleu); }
-        .messages { flex: 1; background: #000; border: 1px solid #222; border-radius: 6px; padding: 10px; overflow-y: auto; margin-bottom: 10px; font-size: 0.9rem; }
-        .msg-line { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        /* === MODAL (BULLE D'OBJECTIF) === */
+        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 4000; backdrop-filter: blur(5px); justify-content: center; align-items: center; }
+        .modal-box { background: #111; border: 1px solid #333; padding: 30px; border-radius: 15px; width: 85%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+        .modal-cat { font-size: 0.8rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .modal-title { font-size: 1.1rem; color: #fff; font-weight: bold; line-height: 1.4; margin-bottom: 25px; }
+        .btn-valider { background: var(--fm-cyan); color: #000; font-weight: bold; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .btn-fermer { background: transparent; color: #888; border: none; cursor: pointer; text-decoration: underline; }
+
+        /* === PAGE CHAT === */
+        .chat-box { width: 90%; max-width: 600px; background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; height: 60vh; }
+        .messages { flex: 1; background: #000; border-radius: 8px; padding: 15px; overflow-y: auto; margin-bottom: 10px; }
+        .msg-line { margin-bottom: 10px; font-size: 0.9rem; line-height: 1.4; border-bottom: 1px solid #1a1a1a; padding-bottom: 8px; }
         .msg-name { font-weight: bold; margin-right: 5px; }
-        
-        .chat-inputs { display: flex; gap: 5px; }
-        .chat-inputs input { margin: 0; padding: 10px; border-radius: 5px; font-size: 0.9rem; border: none; }
-        #input-name { flex: 1; max-width: 110px; background: #333; color: white; }
-        #input-text { flex: 3; background: #222; color: white; }
-        .btn-envoyer { background: var(--bleu); color: black; font-weight: bold; border: none; border-radius: 5px; padding: 0 15px; cursor: pointer; transition: 0.2s; }
-        .btn-envoyer:hover { background: white; }
+        .chat-inputs { display: flex; flex-direction: column; gap: 10px; }
+        .chat-inputs input { background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; font-size: 0.9rem; }
+        .btn-envoyer { background: var(--fm-cyan); color: #000; font-weight: bold; border: none; border-radius: 8px; padding: 12px; cursor: pointer; }
 
-        .actions { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .btn-retour { background: #ff9800; color: black; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; }
-        .btn-retour:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,152,0,0.4); }
-
-        canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; display: none; }
+        canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none; }
+        .btn-retour-action { background: transparent; border: 1px solid #ff9800; color: #ff9800; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:var(--vert); margin-top:0;">FM ARENA 2026</h2>
-            <p style="font-size:0.8rem; color:#aaa;">Connexion Équipe Sécurisée</p>
+            <h2 style="color:var(--fm-cyan); margin-top:0;">FM LOGISTIC 2027</h2>
+            <p style="font-size:0.8rem; color:#aaa;">Portail Stratégique Sécurisé</p>
             <input type="text" id="user" placeholder="Identifiant (admin)">
             <input type="password" id="pass" placeholder="Mot de passe">
-            <button class="btn-login" onclick="checkLogin()">Entrer sur le terrain</button>
-            <p id="error" style="color:#ff4444; font-size:0.9rem; margin-top:15px; font-weight:bold;"></p>
+            <button class="btn-login" onclick="checkLogin()">Accéder au Plan</button>
+            <p id="error" style="color:#ff4444; font-size:0.9rem; margin-top:10px;"></p>
         </div>
     </div>
 
-    <div id="popup-overlay"></div>
-    <div class="popup-box" id="popup-confirm">
-        <h3>Êtes-vous sûr de valider cet objectif ?</h3>
-        <div class="btn-group">
-            <button class="btn-pop btn-oui" onclick="confirmerValidation()">Oui, on passe !</button>
-            <button class="btn-pop btn-non" onclick="fermerPopup()">Non</button>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchPage('page-terrain', this)">🏟️<span>Tactique</span></div>
+        <div class="nav-item" onclick="switchPage('page-chat', this)">💬<span>Discussion</span></div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-cat" id="modal-cat">Catégorie</div>
+            <div class="modal-title" id="modal-title">Description de l'objectif...</div>
+            <button class="btn-valider" onclick="confirmerValidation()">VALIDER CETTE STRATÉGIE</button>
+            <button class="btn-fermer" onclick="fermerModal()">Fermer</button>
         </div>
     </div>
 
-    <div class="header">
-        <h1>OBJECTIF 2026</h1>
-        <div class="live-badge"><span class="point-rouge"></span> En Direct avec l'équipe</div>
-        <div class="maillot-container">
-            <div class="jersey">
-                <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M 28 15 C 35 15 42 24 50 24 C 58 24 65 15 72 15 C 80 15 92 28 92 28 C 92 28 85 41 80 38 L 78 88 C 60 92 40 92 22 88 L 20 38 C 15 41 8 28 8 28 C 8 28 20 15 28 15 Z" fill="#00d2ff" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
-                    <path d="M 38 15 C 42 22 58 22 62 15 C 55 18 45 18 38 15 Z" fill="rgba(0,0,0,0.4)"/>
-                    <path d="M 28 15 L 20 38 M 72 15 L 80 38" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
-                    <text x="50" y="62" font-size="28" text-anchor="middle" fill="white">👥</text>
-                </svg>
-                <span style="color:var(--bleu)">PEOPLE</span>
-            </div>
-            <div class="jersey">
-                <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M 28 15 C 35 15 42 24 50 24 C 58 24 65 15 72 15 C 80 15 92 28 92 28 C 92 28 85 41 80 38 L 78 88 C 60 92 40 92 22 88 L 20 38 C 15 41 8 28 8 28 C 8 28 20 15 28 15 Z" fill="#39ff14" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
-                    <path d="M 38 15 C 42 22 58 22 62 15 C 55 18 45 18 38 15 Z" fill="rgba(0,0,0,0.4)"/>
-                    <path d="M 28 15 L 20 38 M 72 15 L 80 38" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
-                    <text x="50" y="62" font-size="28" text-anchor="middle" fill="black">🌍</text>
-                </svg>
-                <span style="color:var(--vert)">ENVIRON.</span>
-            </div>
-            <div class="jersey">
-                <svg class="jersey-svg" viewBox="0 0 100 100">
-                    <path d="M 28 15 C 35 15 42 24 50 24 C 58 24 65 15 72 15 C 80 15 92 28 92 28 C 92 28 85 41 80 38 L 78 88 C 60 92 40 92 22 88 L 20 38 C 15 41 8 28 8 28 C 8 28 20 15 28 15 Z" fill="#ff007f" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
-                    <path d="M 38 15 C 42 22 58 22 62 15 C 55 18 45 18 38 15 Z" fill="rgba(0,0,0,0.4)"/>
-                    <path d="M 28 15 L 20 38 M 72 15 L 80 38" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
-                    <text x="50" y="62" font-size="28" text-anchor="middle" fill="white">🤝</text>
-                </svg>
-                <span style="color:var(--rose)">VIVRE</span>
+    <div id="page-terrain" class="page active">
+        <div class="header">
+            <h1>PLAN TACTIQUE 2027</h1>
+            <div class="live-badge">🔴 Synchro Temps Réel</div>
+        </div>
+
+        <div class="scene-3d">
+            <div class="pitch-container">
+                <div class="bench" id="bench-container"></div>
+                <div class="pitch" id="arena">
+                    <div class="surface surface-left"></div>
+                    <div class="mid-line"></div>
+                    <div class="center-circle"></div>
+                    <div class="surface surface-right"></div>
+                    <svg id="svg-lines" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;"></svg>
+                    </div>
             </div>
         </div>
+        <button class="btn-retour-action" onclick="annulerDerniereAction()">↩️ Annuler la dernière passe</button>
     </div>
 
-    <div class="stade-container">
-        <div class="stade" id="arena">
-            <div class="surface surface-left"></div>
-            <div class="mid-line"></div>
-            <div class="center-circle"></div>
-            <div class="surface surface-right"></div>
-            <div class="cage cage-left"></div>
-            <div class="cage cage-right"></div>
-            
-            <svg id="svg-lines" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;"></svg>
-            
-            <div id="game-content">
-                <div class="colonne" id="col-defense"></div>
-                <div class="colonne" id="col-milieu"></div>
-                <div class="colonne" id="col-attaque"></div>
-            </div>
+    <div id="page-chat" class="page">
+        <div class="header">
+            <h1>NOTES DE L'ÉQUIPE</h1>
         </div>
-    </div>
-
-    <div class="collab-section">
         <div class="chat-box">
-            <h3>💬 Chat d'Équipe</h3>
-            <div class="messages" id="chat-messages">Chargement des messages...</div>
+            <div class="messages" id="chat-messages"></div>
             <div class="chat-inputs">
-                <input type="text" id="input-name" placeholder="Votre prénom">
-                <input type="text" id="input-text" placeholder="Tapez votre commentaire...">
-                <button class="btn-envoyer" onclick="envoyerMessage()">Envoyer</button>
+                <input type="text" id="chat-name" placeholder="Votre prénom">
+                <input type="text" id="chat-text" placeholder="Tapez votre message...">
+                <button class="btn-envoyer" onclick="envoyerMessage()">Publier</button>
             </div>
-        </div>
-        <div class="actions">
-            <button class="btn-retour" onclick="annulerDerniereAction()">↩️ Annuler la dernière passe</button>
         </div>
     </div>
 
     <canvas id="confetti"></canvas>
 
     <script>
-        // === CLÉS FIREBASE ===
+        // === CLÉS FIREBASE (RÉPARÉES) ===
         const firebaseConfig = {
             apiKey: "AIzaSyCJGFiEeRAa7Kar7YYilrtxirQbG5Yxo4E",
             authDomain: "projet-2026-be8d4.firebaseapp.com",
@@ -238,214 +178,210 @@
         const db = firebase.database();
 
         // === AUDIOS ===
-        // Son quand la passe voyage (déplacement d'air)
         const sonPasse = new Audio('https://assets.mixkit.co/active_storage/sfx/2143/2143-preview.mp3'); 
-        // Son quand le ballon s'allume ("Bling" gratifiant)
         const sonValidation = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'); 
-        // Musique des confettis
         const sonVictoire = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'); 
 
-        const objectives = [
-            { id: 1, label: "Formation", zone: "bleu", col: "col-defense" },
-            { id: 2, label: "Parité H/F", zone: "bleu", col: "col-defense" },
-            { id: 3, label: "Mentorat", zone: "bleu", col: "col-defense" },
-            { id: 4, label: "Carbone -20%", zone: "vert", col: "col-milieu" },
-            { id: 5, label: "Électrique", zone: "vert", col: "col-milieu" },
-            { id: 6, label: "Zéro Déchet", zone: "vert", col: "col-milieu" },
-            { id: 7, label: "Zéro Accident", zone: "rose", col: "col-attaque" },
-            { id: 8, label: "Sport", zone: "rose", col: "col-attaque" },
-            { id: 9, label: "Inclusion", zone: "rose", col: "col-attaque" }
+        // === DESIGN DES MAILLOTS (SVGs Pros) ===
+        const svgFM = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#0033a0" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">👥</text></svg>`;
+        const svgPlanete = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#2ecc71" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">🌍</text></svg>`;
+        const svgPartenaire = `<svg viewBox="0 0 100 100" class="player-svg"><path d="M 25 15 C 35 15 40 25 50 25 C 60 25 65 15 75 15 C 85 15 90 30 90 35 L 85 85 C 65 90 35 90 15 85 L 10 35 C 10 30 15 15 25 15 Z" fill="#f1c40f" stroke="#fff" stroke-width="2"/><text x="50" y="60" font-family="Arial" font-weight="900" font-size="28" fill="#000" text-anchor="middle">🤝</text></svg>`;
+
+        // === DONNÉES DES 13 MAILLOTS (Résumés Ultra Précis) ===
+        const joueurs = [
+            { id: 1, type: "fm", svg: svgFM, x: '10%', y: '50%', titre: "DÉVELOPPER LES COMPÉTENCES ET L'EMPLOYABILITÉ DES ÉQUIPES" },
+            { id: 2, type: "fm", svg: svgFM, x: '25%', y: '20%', titre: "RITUELS MANAGÉRIAUX POUR LA SÉCURITÉ ET LUTTE CONTRE L'ABSENTÉISME" },
+            { id: 3, type: "eco", svg: svgPlanete, x: '25%', y: '40%', titre: "RÉDUIRE L'EMPREINTE CARBONE DE L'ENSEMBLE DES OPÉRATIONS DE 20%" },
+            { id: 4, type: "eco", svg: svgPlanete, x: '25%', y: '60%', titre: "DÉPLOYER DES FLOTTES DE TRANSPORT ÉCO-RESPONSABLES ET ÉLECTRIQUES" },
+            { id: 5, type: "fm", svg: svgFM, x: '25%', y: '80%', titre: "PROGRAMME DE MENTORAT ET TRANSMISSION DES SAVOIRS EN INTERNE" },
+            { id: 6, type: "part", svg: svgPartenaire, x: '50%', y: '25%', titre: "RENFORCER LA COLLABORATION CLIENTS ET OPTIMISER LA SUPPLY CHAIN" },
+            { id: 7, type: "fm", svg: svgFM, x: '50%', y: '50%', titre: "PROMOUVOIR L'INCLUSION, LA PARITÉ ET LA DIVERSITÉ AU QUOTIDIEN" },
+            { id: 8, type: "part", svg: svgPartenaire, x: '50%', y: '75%', titre: "CO-CRÉATION D'INNOVATIONS LOGISTIQUES AVEC NOS PARTENAIRES STRATÉGIQUES" },
+            { id: 9, type: "eco", svg: svgPlanete, x: '75%', y: '25%', titre: "OBJECTIF ZÉRO DÉCHET SUR LA TOTALITÉ DE NOS SITES" },
+            { id: 10, type: "part", svg: svgPartenaire, x: '75%', y: '50%', titre: "AMÉLIORER LA PRODUCTIVITÉ OPÉRATIONNELLE ET LA QUALITÉ DE SERVICE" },
+            { id: 11, type: "fm", svg: svgFM, x: '75%', y: '75%', titre: "GARANTIR LE BIEN-ÊTRE ET LA SANTÉ AU TRAVAIL DES COLLABORATEURS" },
+            { id: 12, type: "part", svg: svgPartenaire, bench: true, titre: "FORGING PARTNERSHIPS FOR LOGISTICS INNOVATION AND MARKET ANTICIPATION" },
+            { id: 13, type: "eco", svg: svgPlanete, bench: true, titre: "SYNERGIES INTERNATIONALES POUR UNE LOGISTIQUE DURABLE ET CIRCULAIRE" }
         ];
 
         let state = []; 
-        let ballonEnAttente = null; 
+        let maillotEnAttente = null; 
         let aGagne = false;
 
+        // Navigation
+        function switchPage(pageId, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Connexion
         function checkLogin() {
             if(document.getElementById('user').value.trim() === 'admin' && document.getElementById('pass').value.trim() === 'admin') {
                 document.getElementById('login-screen').style.display = 'none';
-                lancerJeu();
+                initJeu();
             } else { document.getElementById('error').innerText = "Identifiants incorrects."; }
         }
 
-        function lancerJeu() {
-            objectives.forEach(obj => {
-                const row = document.createElement('div');
-                row.className = `obj-row ${obj.zone}`;
-                row.id = `ballon-${obj.id}`;
-                row.innerHTML = `<div class="ball-3d">${obj.label}</div>`;
-                row.onclick = () => demanderValidation(obj.id);
-                document.getElementById(obj.col).appendChild(row);
+        // Initialisation
+        function initJeu() {
+            const pitch = document.getElementById('arena');
+            const bench = document.getElementById('bench-container');
+
+            joueurs.forEach(j => {
+                const div = document.createElement('div');
+                div.className = `player ${j.type}`;
+                div.id = `joueur-${j.id}`;
+                div.innerHTML = j.svg + `<div class="player-num">${j.id}</div>`;
+                div.onclick = () => ouvrirModal(j);
+
+                if (j.bench) {
+                    div.style.position = 'relative'; div.style.transform = 'none';
+                    bench.appendChild(div);
+                } else {
+                    div.style.left = j.x; div.style.top = j.y;
+                    pitch.appendChild(div);
+                }
             });
 
-            // Écoute des ballons pour les allumer
-            db.ref('fm_2026_objectifs').on('value', (snapshot) => {
+            // Écoute Firebase
+            db.ref('fm_tactique_2027').on('value', (snapshot) => {
                 const data = snapshot.val();
                 state = []; 
-                document.querySelectorAll('.obj-row').forEach(el => el.classList.remove('active'));
-                document.getElementById('arena').classList.remove('victory');
+                document.querySelectorAll('.player').forEach(el => el.classList.remove('active'));
 
                 if (data) {
                     const sorted = Object.keys(data).map(k => ({ id: parseInt(k), time: data[k].timestamp })).sort((a,b) => a.time - b.time);
                     sorted.forEach(item => {
                         state.push(item.id);
-                        document.getElementById(`ballon-${item.id}`).classList.add('active'); // S'allume ici
+                        document.getElementById(`joueur-${item.id}`).classList.add('active');
                     });
                 }
                 drawLines();
 
-                // Victoire Finale (Déclenchée seulement si tous sont validés)
-                if(state.length === objectives.length && !aGagne) { 
-                    document.getElementById('arena').classList.add('victory');
-                    sonVictoire.play().catch(e=>{});
-                    launchConfetti();
-                    aGagne = true;
-                } else if (state.length < objectives.length) {
-                    aGagne = false; 
-                }
+                if(state.length === joueurs.length && !aGagne) { 
+                    sonVictoire.play().catch(e=>{}); launchConfetti(); aGagne = true;
+                } else if (state.length < joueurs.length) { aGagne = false; }
             });
 
-            // Écoute du Chat d'équipe
-            db.ref('fm_2026_chat_v2').on('value', (snapshot) => {
+            // Écoute Chat
+            db.ref('fm_chat_2027').on('value', (snapshot) => {
                 const data = snapshot.val();
                 const box = document.getElementById('chat-messages');
                 box.innerHTML = '';
                 if(data) {
-                    const msgs = Object.values(data).sort((a,b) => a.time - b.time);
-                    msgs.forEach(m => {
-                        const c = genererCouleurPrenom(m.name);
+                    Object.values(data).sort((a,b) => a.time - b.time).forEach(m => {
+                        const c = genererCouleur(m.name);
                         box.innerHTML += `<div class="msg-line"><span class="msg-name" style="color:${c}">${m.name} :</span><span style="color:#ddd">${m.text}</span></div>`;
                     });
-                    box.scrollTop = box.scrollHeight; // Descend tout en bas automatiquement
-                } else {
-                    box.innerHTML = "<em>Aucun message. Soyez le premier à commenter !</em>";
+                    box.scrollTop = box.scrollHeight;
                 }
             });
         }
 
-        function genererCouleurPrenom(nom) {
-            let hash = 0;
-            for (let i = 0; i < nom.length; i++) { hash = nom.charCodeAt(i) + ((hash << 5) - hash); }
-            const hue = Math.abs(hash % 360);
-            return `hsl(${hue}, 80%, 65%)`;
+        function genererCouleur(nom) {
+            let hash = 0; for (let i=0; i<nom.length; i++) hash = nom.charCodeAt(i) + ((hash << 5) - hash);
+            return `hsl(${Math.abs(hash % 360)}, 80%, 65%)`;
         }
 
-        function demanderValidation(id) {
-            if(state.includes(id)) return;
-            ballonEnAttente = id;
-            document.getElementById('popup-overlay').style.display = 'block';
-            document.getElementById('popup-confirm').style.display = 'block';
+        // Modal
+        function ouvrirModal(j) {
+            if(state.includes(j.id)) return;
+            maillotEnAttente = j.id;
+            
+            let icon = "👥 People"; let col = "var(--fm-cyan)";
+            if(j.type === "eco") { icon = "🌍 Environnement"; col = "var(--eco-green)"; }
+            if(j.type === "part") { icon = "🤝 Partenaire"; col = "var(--partner-gold)"; }
+
+            document.getElementById('modal-cat').innerHTML = `<span style="color:${col}">${icon}</span>`;
+            document.getElementById('modal-title').innerText = j.titre;
+            document.getElementById('modal-overlay').style.display = 'flex';
         }
 
-        function fermerPopup() {
-            ballonEnAttente = null;
-            document.getElementById('popup-overlay').style.display = 'none';
-            document.getElementById('popup-confirm').style.display = 'none';
-        }
+        function fermerModal() { maillotEnAttente = null; document.getElementById('modal-overlay').style.display = 'none'; }
 
         function confirmerValidation() {
-            if(ballonEnAttente) {
-                const idCible = ballonEnAttente; // On sauvegarde la cible avant de fermer
-                fermerPopup();
-                
-                if (state.length > 0) {
-                    animerPasse(state[state.length - 1], idCible);
-                } else {
-                    validerOfficiellement(idCible);
-                }
+            if(maillotEnAttente) {
+                const idCible = maillotEnAttente;
+                fermerModal();
+                if (state.length > 0) { animerPasse(state[state.length - 1], idCible); } 
+                else { validerOfficiellement(idCible); }
             }
         }
 
-        // Fait voler un ballon d'un point A à un point B
+        // Animation de la Passe ⚽
         function animerPasse(idDepart, idArrivee) {
-            // Son de la passe qui vole
-            sonPasse.currentTime = 0;
-            sonPasse.play().catch(e=>{});
+            sonPasse.currentTime = 0; sonPasse.play().catch(e=>{});
 
-            const b1 = document.getElementById(`ballon-${idDepart}`).querySelector('.ball-3d').getBoundingClientRect();
-            const b2 = document.getElementById(`ballon-${idArrivee}`).querySelector('.ball-3d').getBoundingClientRect();
+            const p1 = document.getElementById(`joueur-${idDepart}`);
+            const p2 = document.getElementById(`joueur-${idArrivee}`);
+            const r1 = p1.getBoundingClientRect(); const r2 = p2.getBoundingClientRect();
             const arena = document.getElementById('arena').getBoundingClientRect();
 
-            const ballePasse = document.createElement('div');
-            ballePasse.className = 'passe-anim';
-            ballePasse.innerText = "⚽";
-            ballePasse.style.left = (b1.left - arena.left + b1.width/2 - 17) + 'px';
-            ballePasse.style.top = (b1.top - arena.top + b1.height/2 - 17) + 'px';
+            const balle = document.createElement('div');
+            balle.className = 'passe-anim'; balle.innerText = "⚽";
             
-            document.getElementById('arena').appendChild(ballePasse);
+            // Calculs relatifs au terrain pour respecter la 3D
+            let sX = r1.left - arena.left + r1.width/2 - 10; let sY = r1.top - arena.top + r1.height/2 - 10;
+            let eX = r2.left - arena.left + r2.width/2 - 10; let eY = r2.top - arena.top + r2.height/2 - 10;
 
-            // Force le navigateur à dessiner la position de départ
-            ballePasse.getBoundingClientRect();
+            balle.style.left = sX + 'px'; balle.style.top = sY + 'px';
+            document.getElementById('arena').appendChild(balle);
+            balle.getBoundingClientRect(); // Force le dessin
 
-            // Déplace la balle vers la nouvelle cible
-            ballePasse.style.left = (b2.left - arena.left + b2.width/2 - 17) + 'px';
-            ballePasse.style.top = (b2.top - arena.top + b2.height/2 - 17) + 'px';
-            ballePasse.style.transform = 'rotate(1080deg)';
+            balle.style.left = eX + 'px'; balle.style.top = eY + 'px';
 
-            // Une fois l'animation finie, on valide et on affiche le texte
-            setTimeout(() => {
-                ballePasse.remove();
-                validerOfficiellement(idArrivee);
-            }, 600);
+            setTimeout(() => { balle.remove(); validerOfficiellement(idArrivee); }, 600);
         }
 
-        function validerOfficiellement(idCible) {
-            // Affichage des Mots d'encouragement
-            const mots = ["Excellent !", "Continuez comme ça !", "Beau travail !", "Super passe !", "Bravo !"];
-            const f = document.createElement('div');
-            f.className = 'feedback'; 
-            f.innerText = mots[Math.floor(Math.random() * mots.length)];
-            document.getElementById(`ballon-${idCible}`).appendChild(f);
-            setTimeout(() => f.remove(), 1200);
-
-            // Son de réussite (le ballon s'allume)
-            sonValidation.currentTime = 0;
-            sonValidation.play().catch(e=>{});
-
-            // Envoi de l'information à Firebase (ce qui va l'allumer pour tout le monde)
-            db.ref('fm_2026_objectifs/' + idCible).set({ timestamp: Date.now() });
+        function validerOfficiellement(id) {
+            sonValidation.currentTime = 0; sonValidation.play().catch(e=>{});
+            db.ref('fm_tactique_2027/' + id).set({ timestamp: Date.now() });
         }
 
         function annulerDerniereAction() {
-            db.ref('fm_2026_objectifs').once('value').then((snapshot) => {
+            db.ref('fm_tactique_2027').once('value').then((snapshot) => {
                 const data = snapshot.val();
                 if(data) {
                     let dernierId = null; let maxTime = 0;
                     for (const id in data) { if(data[id].timestamp > maxTime) { maxTime = data[id].timestamp; dernierId = id; } }
-                    if(dernierId) { db.ref('fm_2026_objectifs/' + dernierId).remove(); }
+                    if(dernierId) { db.ref('fm_tactique_2027/' + dernierId).remove(); }
                 }
             });
         }
 
+        // Chat
         function envoyerMessage() {
-            const nom = document.getElementById('input-name').value.trim() || "Anonyme";
-            const txt = document.getElementById('input-text').value.trim();
+            const nom = document.getElementById('chat-name').value.trim() || "Anonyme";
+            const txt = document.getElementById('chat-text').value.trim();
             if(txt !== "") { 
-                db.ref('fm_2026_chat_v2').push({ name: nom, text: txt, time: Date.now() }); 
-                document.getElementById('input-text').value = ""; 
+                db.ref('fm_chat_2027').push({ name: nom, text: txt, time: Date.now() }); 
+                document.getElementById('chat-text').value = ""; 
             }
         }
+        document.getElementById('chat-text').addEventListener('keypress', (e) => { if(e.key==='Enter') envoyerMessage(); });
 
-        document.getElementById('input-text').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') envoyerMessage();
-        });
-
+        // Lignes
         function drawLines() {
-            const svg = document.getElementById('svg-lines');
-            svg.innerHTML = '';
+            const svg = document.getElementById('svg-lines'); svg.innerHTML = '';
             for(let i=0; i < state.length - 1; i++) {
-                const b1 = document.getElementById(`ballon-${state[i]}`).querySelector('.ball-3d').getBoundingClientRect();
-                const b2 = document.getElementById(`ballon-${state[i+1]}`).querySelector('.ball-3d').getBoundingClientRect();
+                const p1 = document.getElementById(`joueur-${state[i]}`); const p2 = document.getElementById(`joueur-${state[i+1]}`);
+                if(p1.parentElement.id !== 'arena' || p2.parentElement.id !== 'arena') continue; 
+                
+                const b1 = p1.getBoundingClientRect(); const b2 = p2.getBoundingClientRect();
                 const rT = document.getElementById('arena').getBoundingClientRect();
+                
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 line.setAttribute("x1", b1.left - rT.left + (b1.width/2)); line.setAttribute("y1", b1.top - rT.top + (b1.height/2));
                 line.setAttribute("x2", b2.left - rT.left + (b2.width/2)); line.setAttribute("y2", b2.top - rT.top + (b2.height/2));
-                line.setAttribute("stroke", "rgba(255,255,255,0.7)"); line.setAttribute("stroke-width", "2.5"); line.setAttribute("stroke-dasharray", "6,6");
+                line.setAttribute("stroke", "rgba(255,255,255,0.4)"); line.setAttribute("stroke-width", "3"); line.setAttribute("stroke-dasharray", "8,8");
                 svg.appendChild(line);
             }
         }
         window.addEventListener('resize', drawLines);
 
+        // Confettis
         function launchConfetti() {
             const canvas = document.getElementById('confetti'); canvas.style.display = 'block';
             const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
