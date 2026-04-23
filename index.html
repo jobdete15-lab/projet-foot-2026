@@ -133,7 +133,7 @@
     </div>
 
     <div id="terrain-container">
-        <img src="terrain.jpg" alt="Plan Tactique" class="fond-terrain" id="image-fond">
+        <img src="terrain.png" alt="Plan Tactique" class="fond-terrain" id="image-fond">
 
         <svg id="svg-layer">
             <defs>
@@ -167,7 +167,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Configuration Firebase (Celle que tu as fournie)
+        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCJGFiEeRAa7Kar7YYilrtxirQbG5Yxo4E",
             authDomain: "projet-2026-be8d4.firebaseapp.com",
@@ -271,12 +271,11 @@
             endElement.classList.add('active');
             
             if(!skipAnimation) {
-                // Petit message aléatoire
                 showToast(messagesPositifs[Math.floor(Math.random() * messagesPositifs.length)]);
             }
         }
 
-        // Reconstruit le terrain (sans animation lente) en cas de retour arrière ou de rechargement
+        // Reconstruit le terrain en cas de retour arrière
         function rebuildBoard(historyArray) {
             linesGroup.innerHTML = '';
             zones.forEach(z => z.classList.remove('active'));
@@ -284,26 +283,22 @@
             for (let i = 0; i < historyArray.length; i++) {
                 const prev = i > 0 ? historyArray[i - 1] : null;
                 const curr = historyArray[i];
-                playStep(prev, curr, true); // true = skip animation
+                playStep(prev, curr, true); 
             }
             btnBack.disabled = historyArray.length === 0;
         }
 
-        // --- SYNCHRONISATION FIREBASE ---
-
-        // Écoute les changements sur la base de données (Quand un joueur clique quelque part)
+        // Écoute les changements sur la base de données
         onValue(dbRef, async (snapshot) => {
             const remoteHistory = snapshot.val() || [];
 
-            // Si un nouvel objectif a été ajouté
             if (remoteHistory.length > localHistory.length) {
                 for (let i = localHistory.length; i < remoteHistory.length; i++) {
                     const prevZone = i > 0 ? remoteHistory[i-1] : null;
                     const nextZone = remoteHistory[i];
-                    await playStep(prevZone, nextZone, false); // false = avec animation
+                    await playStep(prevZone, nextZone, false);
                 }
                 
-                // Vérification de la victoire (Tous les objectifs atteints !)
                 if (remoteHistory.length === totalObjectives) {
                     setTimeout(() => {
                         confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, zIndex: 1000 });
@@ -311,7 +306,6 @@
                     }, 500);
                 }
             } 
-            // Si quelqu'un a cliqué sur "Retour en arrière" ou si le terrain a été réinitialisé
             else if (remoteHistory.length < localHistory.length) {
                 rebuildBoard(remoteHistory);
             }
@@ -320,13 +314,13 @@
             btnBack.disabled = localHistory.length === 0;
         });
 
-        // Quand JE clique sur une zone (On envoie à Firebase)
+        // Quand on clique sur une zone
         zones.forEach(zone => {
             zone.addEventListener('click', () => {
                 if (isAnimating || localHistory.includes(zone.id)) return; 
                 
                 const newHistory = [...localHistory, zone.id];
-                set(dbRef, newHistory); // Push l'info à Firebase
+                set(dbRef, newHistory); 
             });
         });
 
@@ -335,7 +329,7 @@
             if (isAnimating || localHistory.length === 0) return;
             
             const newHistory = localHistory.slice(0, -1);
-            set(dbRef, newHistory); // Met à jour Firebase
+            set(dbRef, newHistory); 
         });
 
         // Recalcule les lignes si on redimensionne la fenêtre
