@@ -50,7 +50,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
-        /* LUMINOSITÉ AUGMENTÉE ICI (0.7 au lieu de 0.4) */
         .fond-terrain {
             width: 100%;
             height: auto;
@@ -84,13 +83,12 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
-        .zone.active {
-            border-color: white;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.3);
-            backdrop-filter: brightness(1.5); 
-        }
+        /* Allumage selon la couleur de la zone */
+        .zone.active[data-marker="rose"] { border-color: #ff2a5f; box-shadow: 0 0 20px rgba(255, 42, 95, 0.8), inset 0 0 15px rgba(255, 42, 95, 0.3); backdrop-filter: brightness(1.5); }
+        .zone.active[data-marker="vert"] { border-color: #2aff7b; box-shadow: 0 0 20px rgba(42, 255, 123, 0.8), inset 0 0 15px rgba(42, 255, 123, 0.3); backdrop-filter: brightness(1.5); }
+        .zone.active[data-marker="bleu"] { border-color: #2a8dff; box-shadow: 0 0 20px rgba(42, 141, 255, 0.8), inset 0 0 15px rgba(42, 141, 255, 0.3); backdrop-filter: brightness(1.5); }
 
-        /* --- STYLES DES MESSAGES POPUP (TOASTS) --- */
+        /* Messages Popup */
         #toast-container {
             position: fixed;
             bottom: 30px;
@@ -115,13 +113,8 @@
             animation: slideUp 0.5s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeOut {
-            to { opacity: 0; visibility: hidden; }
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
     </style>
 </head>
@@ -137,28 +130,34 @@
 
         <svg id="svg-layer">
             <defs>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="white" opacity="0.8"/>
+                <marker id="arrowhead-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#ff2a5f" opacity="0.9"/>
+                </marker>
+                <marker id="arrowhead-vert" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#2aff7b" opacity="0.9"/>
+                </marker>
+                <marker id="arrowhead-bleu" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#2a8dff" opacity="0.9"/>
                 </marker>
             </defs>
             <g id="lines-group"></g>
         </svg>
 
-        <div class="zone" id="z-secu" style="top: 22%; left: 23%; width: 13%; height: 6%;"></div>
-        <div class="zone" id="z-digital" style="top: 32%; left: 16%; width: 10%; height: 6%;"></div>
-        <div class="zone" id="z-housseuse" style="top: 60%; left: 10%; width: 13%; height: 7%;"></div>
-        <div class="zone" id="z-espaces" style="top: 70%; left: 22%; width: 10%; height: 6%;"></div>
-        <div class="zone" id="z-briefing" style="top: 35%; left: 29%; width: 10%; height: 6%;"></div>
+        <div class="zone" id="z-secu" data-color="#ff2a5f" data-marker="rose" style="top: 22%; left: 23%; width: 13%; height: 6%;"></div>
+        <div class="zone" id="z-digital" data-color="#ff2a5f" data-marker="rose" style="top: 32%; left: 16%; width: 10%; height: 6%;"></div>
+        <div class="zone" id="z-housseuse" data-color="#ff2a5f" data-marker="rose" style="top: 60%; left: 10%; width: 13%; height: 7%;"></div>
+        <div class="zone" id="z-espaces" data-color="#ff2a5f" data-marker="rose" style="top: 70%; left: 22%; width: 10%; height: 6%;"></div>
+        <div class="zone" id="z-briefing" data-color="#ff2a5f" data-marker="rose" style="top: 35%; left: 29%; width: 10%; height: 6%;"></div>
 
-        <div class="zone" id="z-rh" style="top: 27%; left: 44%; width: 12%; height: 6%;"></div>
-        <div class="zone" id="z-carbone" style="top: 57%; left: 38%; width: 12%; height: 6%;"></div>
-        <div class="zone" id="z-beebryte" style="top: 69%; left: 44%; width: 12%; height: 6%;"></div>
+        <div class="zone" id="z-rh" data-color="#2aff7b" data-marker="vert" style="top: 27%; left: 44%; width: 12%; height: 6%;"></div>
+        <div class="zone" id="z-carbone" data-color="#2aff7b" data-marker="vert" style="top: 57%; left: 38%; width: 12%; height: 6%;"></div>
+        <div class="zone" id="z-beebryte" data-color="#2aff7b" data-marker="vert" style="top: 69%; left: 44%; width: 12%; height: 6%;"></div>
 
-        <div class="zone" id="z-clients" style="top: 22%; left: 67%; width: 15%; height: 6%;"></div>
-        <div class="zone" id="z-packsize" style="top: 34%; left: 79%; width: 10%; height: 6%;"></div>
-        <div class="zone" id="z-apae" style="top: 55%; left: 64%; width: 11%; height: 6%;"></div>
-        <div class="zone" id="z-qualite" style="top: 58%; left: 81%; width: 10%; height: 6%;"></div>
-        <div class="zone" id="z-solidaire" style="top: 70%; left: 70%; width: 19%; height: 7%;"></div>
+        <div class="zone" id="z-clients" data-color="#2a8dff" data-marker="bleu" style="top: 22%; left: 67%; width: 15%; height: 6%;"></div>
+        <div class="zone" id="z-packsize" data-color="#2a8dff" data-marker="bleu" style="top: 34%; left: 79%; width: 10%; height: 6%;"></div>
+        <div class="zone" id="z-apae" data-color="#2a8dff" data-marker="bleu" style="top: 55%; left: 64%; width: 11%; height: 6%;"></div>
+        <div class="zone" id="z-qualite" data-color="#2a8dff" data-marker="bleu" style="top: 58%; left: 81%; width: 10%; height: 6%;"></div>
+        <div class="zone" id="z-solidaire" data-color="#2a8dff" data-marker="bleu" style="top: 70%; left: 70%; width: 19%; height: 7%;"></div>
     </div>
 
     <div id="toast-container"></div>
@@ -167,7 +166,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCJGFiEeRAa7Kar7YYilrtxirQbG5Yxo4E",
             authDomain: "projet-2026-be8d4.firebaseapp.com",
@@ -178,12 +176,10 @@
             appId: "1:487136771744:web:94f9efededb4038b1353c5"
         };
 
-        // Initialisation
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const dbRef = ref(db, 'planTactique/historique');
 
-        // Éléments HTML
         const zones = Array.from(document.querySelectorAll('.zone'));
         const svgLayer = document.getElementById('svg-layer');
         const linesGroup = document.getElementById('lines-group');
@@ -195,10 +191,8 @@
         let isAnimating = false;
         const totalObjectives = zones.length;
 
-        // Messages d'encouragement
         const messagesPositifs = ["Excellent !", "Bien joué !", "Super passe !", "On avance !", "Objectif validé !", "Parfait !"];
 
-        // Affiche un message Popup (Toast)
         function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -207,7 +201,6 @@
             setTimeout(() => { if(toast.parentNode) toast.remove(); }, 3000);
         }
 
-        // Calcule le centre d'une zone
         function getCenter(el) {
             const containerRect = container.getBoundingClientRect();
             const elRect = el.getBoundingClientRect();
@@ -217,47 +210,53 @@
             };
         }
 
-        // Dessine la ligne de passe
-        function drawLine(start, end) {
+        // Ligne de passe avec les nouvelles couleurs
+        function drawLine(start, end, colorHex, markerName) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', start.x);
             line.setAttribute('y1', start.y);
             line.setAttribute('x2', end.x);
             line.setAttribute('y2', end.y);
-            line.setAttribute('stroke', 'rgba(255,255,255,0.8)');
+            line.setAttribute('stroke', colorHex);
             line.setAttribute('stroke-width', '3');
             line.setAttribute('stroke-dasharray', '8,4');
-            line.setAttribute('marker-end', 'url(#arrowhead)');
+            line.setAttribute('marker-end', `url(#arrowhead-${markerName})`);
             linesGroup.appendChild(line);
         }
 
-        // Anime le ballon et gère la séquence visuelle d'un nouveau point
         async function playStep(startZoneId, endZoneId, skipAnimation = false) {
             const endElement = document.getElementById(endZoneId);
             if (!endElement) return;
+
+            const endColor = endElement.getAttribute('data-color');
+            const endMarker = endElement.getAttribute('data-marker');
 
             if (startZoneId) {
                 const startElement = document.getElementById(startZoneId);
                 const startCenter = getCenter(startElement);
                 const endCenter = getCenter(endElement);
 
-                drawLine(startCenter, endCenter);
+                drawLine(startCenter, endCenter, endColor, endMarker);
 
                 if (!skipAnimation) {
                     isAnimating = true;
                     await new Promise(resolve => {
-                        const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                        ball.setAttribute('r', '8');
-                        ball.setAttribute('fill', '#ffffff');
-                        ball.setAttribute('cx', startCenter.x);
-                        ball.setAttribute('cy', startCenter.y);
-                        ball.style.filter = "drop-shadow(0px 0px 5px white)";
+                        // LE VRAI BALLON
+                        const ball = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        ball.textContent = '⚽';
+                        ball.setAttribute('font-size', '28px');
+                        ball.setAttribute('text-anchor', 'middle');
+                        ball.setAttribute('dominant-baseline', 'central');
+                        ball.setAttribute('x', startCenter.x);
+                        ball.setAttribute('y', startCenter.y);
+                        ball.style.filter = "drop-shadow(0px 5px 10px rgba(0,0,0,0.5))";
                         svgLayer.appendChild(ball);
 
+                        // Animation de déplacement ET de rotation
                         const animation = ball.animate([
-                            { cx: startCenter.x, cy: startCenter.y },
-                            { cx: endCenter.x, cy: endCenter.y }
-                        ], { duration: 800, easing: 'ease-in-out', fill: 'forwards' });
+                            { x: startCenter.x, y: startCenter.y, transform: `rotate(0deg)`, transformOrigin: `${startCenter.x}px ${startCenter.y}px` },
+                            { x: endCenter.x, y: endCenter.y, transform: `rotate(720deg)`, transformOrigin: `${endCenter.x}px ${endCenter.y}px` }
+                        ], { duration: 900, easing: 'ease-in-out', fill: 'forwards' });
 
                         animation.onfinish = () => {
                             svgLayer.removeChild(ball);
@@ -275,7 +274,6 @@
             }
         }
 
-        // Reconstruit le terrain en cas de retour arrière
         function rebuildBoard(historyArray) {
             linesGroup.innerHTML = '';
             zones.forEach(z => z.classList.remove('active'));
@@ -288,7 +286,6 @@
             btnBack.disabled = historyArray.length === 0;
         }
 
-        // Écoute les changements sur la base de données
         onValue(dbRef, async (snapshot) => {
             const remoteHistory = snapshot.val() || [];
 
@@ -301,7 +298,7 @@
                 
                 if (remoteHistory.length === totalObjectives) {
                     setTimeout(() => {
-                        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, zIndex: 1000 });
+                        confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 }, zIndex: 1000 });
                         showToast("🎉 CAP 2027 ATTEINT ! 🎉");
                     }, 500);
                 }
@@ -314,29 +311,23 @@
             btnBack.disabled = localHistory.length === 0;
         });
 
-        // Quand on clique sur une zone
         zones.forEach(zone => {
             zone.addEventListener('click', () => {
                 if (isAnimating || localHistory.includes(zone.id)) return; 
-                
                 const newHistory = [...localHistory, zone.id];
                 set(dbRef, newHistory); 
             });
         });
 
-        // Bouton Retour en arrière
         btnBack.addEventListener('click', () => {
             if (isAnimating || localHistory.length === 0) return;
-            
             const newHistory = localHistory.slice(0, -1);
             set(dbRef, newHistory); 
         });
 
-        // Recalcule les lignes si on redimensionne la fenêtre
         window.addEventListener('resize', () => {
             if(!isAnimating) rebuildBoard(localHistory);
         });
-
     </script>
 </body>
 </html>
