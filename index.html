@@ -3,308 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Logistic - Fontenay Arena 2026</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
+    <title>Plan Tactique Interactif</title>
     <style>
-        :root {
-            --color-people: #ff00aa; /* Rose fluo */
-            --color-planet: #00ff88; /* Vert fluo */
-            --color-partner: #00d2ff; /* Bleu cyan fluo */
-            --bg-dark: #030816;
+        /* === STYLE GLOBAL & TERRAIN === */
+        body {
+            background-color: #0a0e17; /* Fond très sombre */
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-dark); color: white; overflow: hidden; }
-
-        /* === FLÈCHES DE NAVIGATION === */
-        .nav-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; transition: 0.3s; font-size: 24px; backdrop-filter: blur(5px); }
-        .nav-arrow:hover { background: rgba(255,255,255,0.2); border-color: white; }
-        .arrow-left { left: 20px; display: none; }
-        .arrow-right { right: 20px; }
-
-        /* === SLIDER === */
-        .slider-container { width: 400vw; height: 100vh; display: flex; transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1); }
-        .slide { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-
-        /* === SLIDE 1 : ACCUEIL (IMAGE 1) === */
-        #slide-1 {
-            background: linear-gradient(to bottom, rgba(3,8,22,0.3) 0%, rgba(3,8,22,0.9) 100%), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=2000') center/cover;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 90vw;
+            max-width: 1200px;
+            margin-bottom: 20px;
         }
-        #slide-1::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 30%, rgba(0, 210, 255, 0.2) 0%, transparent 60%); pointer-events: none; }
-        .intro-title { font-size: 6rem; font-weight: 900; margin: 0; letter-spacing: -2px; color: #fff; text-shadow: 0 0 30px rgba(0, 210, 255, 0.6); text-transform: uppercase; font-family: 'Arial Black', sans-serif; line-height: 1; }
-        .intro-subtitle { font-size: 2.2rem; margin-top: 10px; font-weight: bold; color: #fff; opacity: 0.9; }
-        .intro-tagline { position: absolute; bottom: 60px; font-size: 1.4rem; color: rgba(255,255,255,0.8); font-style: italic; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 15px; }
 
-        /* === SLIDE 2 : LES 3 DIMENSIONS (IMAGE 2) === */
-        #slide-2 { background: radial-gradient(circle at top, #0a1930 0%, var(--bg-dark) 80%); }
-        .dim-container { display: flex; gap: 50px; margin-top: 40px; }
-        .shield-wrapper { position: relative; width: 280px; text-align: center; }
-        .shield { padding: 40px 20px; background: rgba(0,0,0,0.4); border-radius: 20px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.4s; position: relative; z-index: 10; }
-        .shield:hover { transform: translateY(-10px); background: rgba(255,255,255,0.05); }
-        .shield.p-shield { border-color: var(--color-people); box-shadow: 0 0 40px rgba(255,0,170,0.2); }
-        .shield.pl-shield { border-color: var(--color-planet); box-shadow: 0 0 40px rgba(0,255,136,0.2); }
-        .shield.pa-shield { border-color: var(--color-partner); box-shadow: 0 0 40px rgba(0,210,255,0.2); }
-        
-        /* Bulles autour des boucliers */
-        .bubble { position: absolute; background: rgba(0,0,0,0.9); border: 1px solid white; padding: 10px 15px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: scale(0); z-index: 5; white-space: nowrap; }
-        .show-bubbles .bubble { opacity: 1; transform: scale(1); }
-        /* Positions des bulles */
-        .b-top { top: -40px; left: 50%; transform: translateX(-50%) scale(0); }
-        .show-bubbles .b-top { transform: translateX(-50%) scale(1); }
-        .b-left { top: 50%; left: -80px; transform: translateY(-50%) scale(0); }
-        .show-bubbles .b-left { transform: translateY(-50%) scale(1); }
-        .b-right { top: 50%; right: -80px; transform: translateY(-50%) scale(0); }
-        .show-bubbles .b-right { transform: translateY(-50%) scale(1); }
-
-        /* === SLIDE 3 : TERRAIN COMPLET (IMAGE 3) === */
-        #slide-3 { background: #030816; }
-        .scene-3d { perspective: 1800px; width: 100%; height: 80vh; display: flex; align-items: center; justify-content: center; }
-        .pitch { 
-            width: 1100px; height: 550px; background: #0a1128; 
-            border: 4px solid #1a2b5e; transform: rotateX(55deg) rotateZ(-15deg); 
-            position: relative; box-shadow: 0 50px 100px rgba(0,0,0,0.9); transform-style: preserve-3d;
+        button.back-btn {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
-        .pitch::before { content: ''; position: absolute; inset: 15px; border: 2px solid rgba(255,255,255,0.2); pointer-events: none; }
-        .pitch::after { content: ''; position: absolute; left: 50%; top: 15px; bottom: 15px; width: 2px; background: rgba(255,255,255,0.2); transform: translateX(-50%); pointer-events: none; }
-        .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 150px; height: 150px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: none; }
 
-        /* Les Noeuds Stratégiques (Joueurs) */
-        .node { position: absolute; width: 60px; height: 60px; background: #050a15; border: 3px solid #555; border-radius: 50%; transform: translate(-50%, -50%) rotateZ(15deg) rotateX(-55deg); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
-        .node:hover { transform: translate(-50%, -60%) rotateZ(15deg) rotateX(-55deg) scale(1.2); }
-        .node-label { position: absolute; bottom: -45px; width: 150px; text-align: center; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; line-height: 1.2; color: #aaa; pointer-events: none; }
-        
-        /* État Allumé */
-        .node.active .node-label { color: white; text-shadow: 0 0 5px white; }
-        .node.active.people { border-color: var(--color-people); box-shadow: 0 0 30px var(--color-people); color: var(--color-people); }
-        .node.active.planet { border-color: var(--color-planet); box-shadow: 0 0 30px var(--color-planet); color: var(--color-planet); }
-        .node.active.partner { border-color: var(--color-partner); box-shadow: 0 0 30px var(--color-partner); color: var(--color-partner); }
+        button.back-btn:hover { background-color: #555; }
+        button.back-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Banc de touche */
-        .bench-area { position: absolute; right: -120px; top: 50%; transform: translateY(-50%) rotateZ(15deg); display: flex; flex-direction: column; gap: 40px; }
+        /* === LE TERRAIN === */
+        #pitch {
+            display: flex;
+            width: 90vw;
+            max-width: 1200px;
+            height: 70vh;
+            background: linear-gradient(to bottom, #111, #1a1a1a);
+            border: 2px solid #333;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
 
-        /* Animation Passe */
-        .ball-pass { position: absolute; font-size: 25px; z-index: 1000; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5)); }
+        /* Calque SVG pour dessiner les flèches et le ballon */
+        #svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Laisse passer les clics vers les boutons en dessous */
+            z-index: 5;
+        }
 
-        /* === SLIDE 4 : CHAT === */
-        .chat-box { width: 80%; max-width: 800px; height: 60vh; background: #050a15; border: 1px solid #1a2b5e; border-radius: 20px; display: flex; flex-direction: column; padding: 25px; }
-        #chat-msgs { flex: 1; overflow-y: auto; background: #02040a; padding: 20px; border-radius: 15px; border: 1px solid #111; margin-bottom: 20px; }
-        .chat-row { display: flex; gap: 10px; }
-        .chat-row input { background: #0a1128; border: 1px solid #1a2b5e; color: white; padding: 15px; border-radius: 10px; font-size: 1rem; }
+        /* === LES ZONES === */
+        .zone {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            border-right: 2px dashed rgba(255,255,255,0.1);
+        }
+        .zone:last-child { border-right: none; }
 
-        /* === MODAL CONFIRMATION === */
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
-        .modal-card { background: #050a15; border: 2px solid white; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; }
+        .zone-title {
+            position: absolute;
+            bottom: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            opacity: 0.2;
+            letter-spacing: 5px;
+            z-index: 1;
+        }
+
+        /* === LES OBJECTIFS (NOEUDS) === */
+        .node {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0.4; /* Sombre au début */
+            transition: all 0.4s ease;
+            font-size: 0.9em;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .node:hover { opacity: 0.8; transform: scale(1.05); }
+
+        /* État "Allumé" par zone */
+        .node.active {
+            opacity: 1;
+            transform: scale(1.1);
+            font-weight: bold;
+        }
+
+        /* Défense (Rouge) */
+        .defense .node.active { border-color: #ff2a5f; box-shadow: 0 0 20px rgba(255, 42, 95, 0.6); text-shadow: 0 0 5px #ff2a5f; }
+        .defense .zone-title { color: #ff2a5f; }
+
+        /* Milieu (Vert) */
+        .milieu .node.active { border-color: #2aff7b; box-shadow: 0 0 20px rgba(42, 255, 123, 0.6); text-shadow: 0 0 5px #2aff7b; }
+        .milieu .zone-title { color: #2aff7b; }
+
+        /* Attaque (Bleu) */
+        .attaque .node.active { border-color: #2a8dff; box-shadow: 0 0 20px rgba(42, 141, 255, 0.6); text-shadow: 0 0 5px #2a8dff; }
+        .attaque .zone-title { color: #2a8dff; }
+
     </style>
 </head>
 <body>
 
-    <div class="nav-arrow arrow-left" onclick="changeSlide(-1)">&#10094;</div>
-    <div class="nav-arrow arrow-right" onclick="changeSlide(1)">&#10095;</div>
-
-    <div class="slider-container" id="main-slider">
-        
-        <div class="slide" id="slide-1">
-            <h1 class="intro-title">FONTENAY ARENA 2026</h1>
-            <p class="intro-subtitle">La Coupe du Monde de notre performance</p>
-            <div class="intro-tagline">Explorer pour construire durablement.</div>
-        </div>
-
-        <div class="slide" id="slide-2">
-            <h2 style="font-size: 2.5rem; letter-spacing: 3px; margin-bottom: 40px;">Un plan de jeu en 3 dimensions</h2>
-            <div class="dim-container">
-                <div class="shield-wrapper" onclick="this.classList.toggle('show-bubbles')">
-                    <div class="shield p-shield">
-                        <div style="font-size: 4rem; margin-bottom: 15px;">🛡️</div>
-                        <h3 style="color:var(--color-people); margin:0;">DÉFENSE (PEOPLE)</h3>
-                        <p style="font-size:0.9rem; color:#aaa;">Protéger notre base et sécuriser nos talents.</p>
-                    </div>
-                    <div class="bubble b-top" style="border-color:var(--color-people)">Sécurité Zéro Faille</div>
-                    <div class="bubble b-left" style="border-color:var(--color-people)">Briefing Digital</div>
-                    <div class="bubble b-right" style="border-color:var(--color-people)">Espaces de Vie</div>
-                </div>
-
-                <div class="shield-wrapper" onclick="this.classList.toggle('show-bubbles')">
-                    <div class="shield pl-shield">
-                        <div style="font-size: 4rem; margin-bottom: 15px;">🛡️</div>
-                        <h3 style="color:var(--color-planet); margin:0;">MILIEU (PLANET)</h3>
-                        <p style="font-size:0.9rem; color:#aaa;">Maîtriser le terrain et optimiser l'énergie.</p>
-                    </div>
-                    <div class="bubble b-top" style="border-color:var(--color-planet)">Empreinte Carbone</div>
-                    <div class="bubble b-left" style="border-color:var(--color-planet)">Digitalisation RH</div>
-                    <div class="bubble b-right" style="border-color:var(--color-planet)">Optimisation Beebryte</div>
-                </div>
-
-                <div class="shield-wrapper" onclick="this.classList.toggle('show-bubbles')">
-                    <div class="shield pa-shield">
-                        <div style="font-size: 4rem; margin-bottom: 15px;">🛡️</div>
-                        <h3 style="color:var(--color-partner); margin:0;">ATTAQUE (PARTNERS)</h3>
-                        <p style="font-size:0.9rem; color:#aaa;">Marquer des points avec notre écosystème.</p>
-                    </div>
-                    <div class="bubble b-top" style="border-color:var(--color-partner)">Performance Clients</div>
-                    <div class="bubble b-left" style="border-color:var(--color-partner)">Packsize Agilité</div>
-                    <div class="bubble b-right" style="border-color:var(--color-partner)">Qualité (HACCP)</div>
-                </div>
-            </div>
-            <p style="margin-top: 50px; color: #888;">Cliquez sur un bouclier pour voir ses axes, ou passez à la slide suivante.</p>
-        </div>
-
-        <div class="slide" id="slide-3">
-            <h2 style="font-size: 2rem; letter-spacing: 4px; margin-bottom: 10px;">SCHÉMA TACTIQUE : FONTENAY ARENA 2026</h2>
-            <div class="scene-3d">
-                <div class="pitch" id="pitch">
-                    <div class="center-circle"></div>
-                    <div id="nodes-layer"></div>
-                    <div class="bench-area" id="bench-layer"></div>
-                </div>
-            </div>
-            <button onclick="undo()" style="background:transparent; border:1px solid #ff9800; color:#ff9800; padding:10px 20px; border-radius:20px; cursor:pointer; margin-top:20px;">↩ ANNULER DERNIÈRE PASSE</button>
-        </div>
-
-        <div class="slide" id="slide-4">
-            <h2 style="letter-spacing: 4px;">COLLABORATION EN DIRECT</h2>
-            <div class="chat-box">
-                <div id="chat-msgs"></div>
-                <div class="chat-row">
-                    <input type="text" id="u-name" placeholder="Prénom" style="width: 120px;">
-                    <input type="text" id="u-msg" placeholder="Tapez votre commentaire ici..." style="flex: 1;">
-                    <button onclick="sendMsg()" style="padding: 0 30px; background:var(--color-partner); border:none; font-weight:bold; border-radius:10px; cursor:pointer; color:black;">ENVOYER</button>
-                </div>
-            </div>
-        </div>
-
+    <div class="header">
+        <h2>Plan Tactique CAP 2027</h2>
+        <button id="btn-back" class="back-btn" disabled>🔙 Revenir en arrière</button>
     </div>
 
-    <div id="modal">
-        <div class="modal-card">
-            <h3 id="m-title" style="margin-top:0;">Objectif</h3>
-            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                <button onclick="confirmVal()" style="padding: 10px 20px; background:white; color:black; border:none; font-weight:bold; cursor:pointer; border-radius:5px;">Valider l'axe</button>
-                <button onclick="closeMod()" style="padding: 10px 20px; background:#333; color:white; border:none; cursor:pointer; border-radius:5px;">Annuler</button>
-            </div>
+    <div id="pitch">
+        <svg id="svg-layer">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="white" opacity="0.6"/>
+                </marker>
+            </defs>
+            <g id="lines-group"></g> </svg>
+
+        <div class="zone defense">
+            <div class="node" id="secu">Culture Sécurité</div>
+            <div class="node" id="digital">Culture digital</div>
+            <div class="node" id="housse">Housseuse automatisée</div>
+            <div class="node" id="espaces">Espaces de vie</div>
+            <div class="zone-title">DÉFENSE</div>
+        </div>
+
+        <div class="zone milieu">
+            <div class="node" id="rh">Digitalisation RH</div>
+            <div class="node" id="carbone">Empreinte carbone</div>
+            <div class="node" id="beebryte">Beebryte B12</div>
+            <div class="zone-title">MILIEU</div>
+        </div>
+
+        <div class="zone attaque">
+            <div class="node" id="clients">Performance Clients</div>
+            <div class="node" id="packsize">Packsize</div>
+            <div class="node" id="qualite">Qualité (HACCP)</div>
+            <div class="node" id="solidaire">Engagement solidaire</div>
+            <div class="zone-title">ATTAQUE</div>
         </div>
     </div>
 
     <script>
-        // === CONFIG FIREBASE ===
-        const firebaseConfig = {
-            apiKey: "AIzaSyCJGFiEeRAa7Kar7YYilrtxirQbG5Yxo4E",
-            authDomain: "projet-2026-be8d4.firebaseapp.com",
-            databaseURL: "https://projet-2026-be8d4-default-rtdb.firebaseio.com",
-            projectId: "projet-2026-be8d4",
-            storageBucket: "projet-2026-be8d4.firebasestorage.app",
-            messagingSenderId: "487136771744",
-            appId: "1:487136771744:web:94f9efededb4038b1353c5"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const nodes = document.querySelectorAll('.node');
+        const svgLayer = document.getElementById('svg-layer');
+        const linesGroup = document.getElementById('lines-group');
+        const pitch = document.getElementById('pitch');
+        const btnBack = document.getElementById('btn-back');
 
-        // Audio
-        const sPass = new Audio('https://assets.mixkit.co/active_storage/sfx/2143/2143-preview.mp3');
-        const sLight = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
+        let history = []; // Stocke l'historique des clics
+        let currentNode = null; // Le point de départ actuel de la passe
+        let isAnimating = false; // Empêche de cliquer pendant l'animation du ballon
 
-        // Les Noeuds (Positions exactes selon l'image 3)
-        const stratNodes = [
-            // PEOPLE (Rose)
-            { id: 1, type: "people", icon: "🛡️", l: 15, t: 70, txt: "Sécurité : Zéro faille" },
-            { id: 2, type: "people", icon: "📱", l: 30, t: 40, txt: "Briefing digital" },
-            { id: 3, type: "people", icon: "🤖", l: 40, t: 85, txt: "Housseuse Automatisée" },
-            { id: 4, type: "people", icon: "☕", l: 50, t: 85, txt: "Espaces de vie / Cohésion" },
-            { id: 5, type: "people", icon: "💼", l: 25, t: 85, txt: "Stumetletion" },
-            // PLANET (Vert)
-            { id: 6, type: "planet", icon: "☁️", l: 45, t: 30, txt: "Digitalisation RH" },
-            { id: 7, type: "planet", icon: "♻️", l: 65, t: 60, txt: "Empreinte Carbone" },
-            { id: 8, type: "planet", icon: "🔋", l: 65, t: 85, txt: "Optimisation Beebryte" },
-            // PARTNER (Bleu)
-            { id: 9, type: "partner", icon: "📈", l: 65, t: 25, txt: "Performance Clients" },
-            { id: 10, type: "partner", icon: "📦", l: 85, t: 30, txt: "Packsize: Agilité" },
-            { id: 11, type: "partner", icon: "✅", l: 85, t: 65, txt: "Qualité (HACCP)" },
-            // BANC (Manque de place)
-            { id: 12, type: "partner", icon: "❤️", bench: true, txt: "Bénévolat / Café Joyeux" },
-            { id: 13, type: "partner", icon: "📝", bench: true, txt: "Conformité ICPE" }
-        ];
+        // Fonction pour obtenir le centre d'un élément par rapport au terrain
+        function getCenter(el) {
+            const pitchRect = pitch.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            return {
+                x: elRect.left - pitchRect.left + elRect.width / 2,
+                y: elRect.top - pitchRect.top + elRect.height / 2
+            };
+        }
 
-        let slideIdx = 0;
-        let selectedId = null;
-        let activeData = [];
+        // Fonction pour dessiner une ligne entre deux éléments
+        function drawLine(start, end) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', start.x);
+            line.setAttribute('y1', start.y);
+            line.setAttribute('x2', end.x);
+            line.setAttribute('y2', end.y);
+            line.setAttribute('stroke', 'rgba(255,255,255,0.4)');
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('stroke-dasharray', '5,5');
+            line.setAttribute('marker-end', 'url(#arrowhead)');
+            linesGroup.appendChild(line);
+        }
 
-        function init() {
-            const nLayer = document.getElementById('nodes-layer');
-            const bLayer = document.getElementById('bench-layer');
-            
-            stratNodes.forEach(n => {
-                const d = document.createElement('div');
-                d.className = `node ${n.type}`; d.id = `n-${n.id}`;
-                d.innerHTML = `${n.icon}<div class="node-label">${n.txt}</div>`;
-                d.onclick = () => showMod(n);
+        // Fonction pour animer le ballon de start à end
+        function animateBall(start, end, targetElement) {
+            return new Promise((resolve) => {
+                isAnimating = true;
                 
-                if(n.bench) bLayer.appendChild(d);
-                else { d.style.left = n.l+"%"; d.style.top = n.t+"%"; nLayer.appendChild(d); }
-            });
+                // Création du ballon (un cercle SVG)
+                const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                ball.setAttribute('r', '6');
+                ball.setAttribute('fill', '#ffffff');
+                ball.setAttribute('cx', start.x);
+                ball.setAttribute('cy', start.y);
+                svgLayer.appendChild(ball);
 
-            // Firebase Sync
-            db.ref('arena_2026_strat').on('value', snap => {
-                const data = snap.val();
-                activeData = data ? Object.keys(data).map(k => ({id:parseInt(k), t:data[k].t})).sort((a,b)=>a.t-b.t) : [];
-                document.querySelectorAll('.node').forEach(p => p.classList.remove('active'));
-                activeData.forEach(s => {
-                    const el = document.getElementById(`n-${s.id}`);
+                // Animation avec l'API Web Animations
+                const animation = ball.animate([
+                    { cx: start.x, cy: start.y },
+                    { cx: end.x, cy: end.y }
+                ], {
+                    duration: 800, // Temps de la passe en millisecondes
+                    easing: 'ease-in-out',
+                    fill: 'forwards'
+                });
+
+                animation.onfinish = () => {
+                    svgLayer.removeChild(ball); // On supprime le ballon une fois arrivé
+                    targetElement.classList.add('active'); // On allume l'objectif
+                    isAnimating = false;
+                    resolve();
+                };
+            });
+        }
+
+        // Gestion du clic sur un objectif
+        nodes.forEach(node => {
+            node.addEventListener('click', async () => {
+                if (isAnimating) return; // Ignore le clic si un ballon bouge
+                
+                // Sauvegarde l'état actuel pour le bouton retour
+                const currentState = {
+                    nodeId: node.id,
+                    htmlState: pitch.innerHTML,
+                    prevNode: currentNode
+                };
+
+                if (!currentNode) {
+                    // Premier clic : on allume juste l'élément
+                    node.classList.add('active');
+                    currentNode = node;
+                    history.push(currentState);
+                    btnBack.disabled = false;
+                } else {
+                    // Clics suivants : si l'élément n'est pas déjà actif
+                    if (currentNode.id !== node.id) {
+                        const startCenter = getCenter(currentNode);
+                        const endCenter = getCenter(node);
+                        
+                        drawLine(startCenter, endCenter);
+                        await animateBall(startCenter, endCenter, node);
+                        
+                        currentNode = node; // Le nouvel élément devient le point de départ
+                        history.push(currentState);
+                        btnBack.disabled = false;
+                    }
+                }
+            });
+        });
+
+        // Gestion du bouton Retour en arrière
+        btnBack.addEventListener('click', () => {
+            if (isAnimating || history.length === 0) return;
+            
+            history.pop(); // Retire le dernier état
+            
+            // Efface toutes les lignes
+            linesGroup.innerHTML = '';
+            
+            // Éteint tout le monde
+            nodes.forEach(n => n.classList.remove('active'));
+
+            if (history.length === 0) {
+                // S'il n'y a plus rien, on remet à zéro
+                currentNode = null;
+                btnBack.disabled = true;
+            } else {
+                // On récupère l'état précédent
+                const previousState = history[history.length - 1];
+                currentNode = document.getElementById(previousState.nodeId);
+                
+                // On re-simule l'allumage de l'historique
+                history.forEach(state => {
+                    const el = document.getElementById(state.nodeId);
                     if(el) el.classList.add('active');
                 });
-            });
 
-            db.ref('chat_2026_strat').on('value', snap => {
-                const msgs = snap.val();
-                const b = document.getElementById('chat-msgs'); b.innerHTML = '';
-                if(msgs) Object.values(msgs).forEach(m => b.innerHTML += `<div style="margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #111;"><b>${m.u} :</b> <span style="color:#ccc;">${m.t}</span></div>`);
-                b.scrollTop = b.scrollHeight;
-            });
-        }
-
-        // Navigation Slider
-        function changeSlide(dir) {
-            slideIdx = Math.max(0, Math.min(3, slideIdx + dir));
-            document.getElementById('main-slider').style.transform = `translateX(-${slideIdx * 100}vw)`;
-            document.querySelector('.arrow-left').style.display = slideIdx === 0 ? 'none' : 'flex';
-            document.querySelector('.arrow-right').style.display = slideIdx === 3 ? 'none' : 'flex';
-        }
-
-        // Modals & Logic
-        function showMod(n) { if(activeData.find(s=>s.id===n.id)) return; selectedId = n.id; document.getElementById('m-title').innerText = n.txt; document.getElementById('modal').style.display = 'flex'; }
-        function closeMod() { document.getElementById('modal').style.display = 'none'; }
-        
-        function confirmVal() {
-            const prev = activeData.length > 0 ? activeData[activeData.length-1].id : null;
-            closeMod();
-            if(prev) playPass(prev, selectedId); else saveVal(selectedId);
-        }
-
-        function playPass(f, t) {
-            sPass.currentTime = 0; sPass.play();
-            const r1 = document.getElementById(`n-${f}`).getBoundingClientRect();
-            const r2 = document.getElementById(`n-${t}`).getBoundingClientRect();
-            const b = document.createElement('div'); b.className = "ball-pass"; b.innerText = "⚽";
-            b.style.left = r1.left+"px"; b.style.top = r1.top+"px";
-            document.body.appendChild(b);
-            setTimeout(() => { b.style.left = r2.left+"px"; b.style.top = r2.top+"px"; }, 50);
-            setTimeout(() => { b.remove(); saveVal(t); }, 600);
-        }
-
-        function saveVal(id) { 
-            sLight.currentTime = 0; sLight.play();
-            db.ref('arena_2026_strat/'+id).set({t: Date.now()}); 
-        }
-        
-        function undo() { if(activeData.length > 0) db.ref('arena_2026_strat/'+activeData[activeData.length-1].id).remove(); }
-        
-        function sendMsg() { 
-            const u = document.getElementById('u-name').value || "Équipe"; 
-            const t = document.getElementById('u-msg').value; 
-            if(t) { db.ref('chat_2026_strat').push({u, t}); document.getElementById('u-msg').value = ''; } 
-        }
-
-        init();
+                // On redessine les lignes précédentes (simplifié)
+                for(let i = 0; i < history.length - 1; i++) {
+                    const n1 = document.getElementById(history[i].nodeId);
+                    const n2 = document.getElementById(history[i+1].nodeId);
+                    drawLine(getCenter(n1), getCenter(n2));
+                }
+            }
+        });
     </script>
 </body>
 </html>
