@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plan Tactique Interactif</title>
     <style>
-        /* === STYLE GLOBAL & TERRAIN === */
         body {
-            background-color: #0a0e17; /* Fond très sombre */
+            background-color: #0a0e17;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -15,13 +14,13 @@
             align-items: center;
             margin: 0;
             padding: 20px;
-            overflow-x: hidden;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
-            width: 90vw;
+            align-items: center;
+            width: 100%;
             max-width: 1200px;
             margin-bottom: 20px;
         }
@@ -36,21 +35,27 @@
             font-weight: bold;
             transition: 0.3s;
         }
-
         button.back-btn:hover { background-color: #555; }
         button.back-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* === LE TERRAIN === */
-        #pitch {
-            display: flex;
-            width: 90vw;
-            max-width: 1200px;
-            height: 70vh;
-            background: linear-gradient(to bottom, #111, #1a1a1a);
-            border: 2px solid #333;
-            border-radius: 10px;
+        /* Le conteneur principal */
+        #terrain-container {
             position: relative;
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 10px;
+            overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        /* L'image de fond (Mets le nom exact de ton image ici) */
+        .fond-terrain {
+            width: 100%;
+            height: auto;
+            display: block;
+            /* Filtre pour assombrir l'image au début */
+            filter: brightness(0.4); 
+            transition: filter 0.5s ease;
         }
 
         /* Calque SVG pour dessiner les flèches et le ballon */
@@ -60,68 +65,34 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Laisse passer les clics vers les boutons en dessous */
-            z-index: 5;
-        }
-
-        /* === LES ZONES === */
-        .zone {
-            flex: 1;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-            padding: 20px;
-            border-right: 2px dashed rgba(255,255,255,0.1);
-        }
-        .zone:last-child { border-right: none; }
-
-        .zone-title {
-            position: absolute;
-            bottom: 20px;
-            font-size: 2em;
-            font-weight: bold;
-            opacity: 0.2;
-            letter-spacing: 5px;
-            z-index: 1;
-        }
-
-        /* === LES OBJECTIFS (NOEUDS) === */
-        .node {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid #444;
-            padding: 12px 20px;
-            border-radius: 30px;
-            cursor: pointer;
+            pointer-events: none;
             z-index: 10;
-            opacity: 0.4; /* Sombre au début */
-            transition: all 0.4s ease;
-            font-size: 0.9em;
-            text-align: center;
-            backdrop-filter: blur(5px);
         }
 
-        .node:hover { opacity: 0.8; transform: scale(1.05); }
-
-        /* État "Allumé" par zone */
-        .node.active {
-            opacity: 1;
-            transform: scale(1.1);
-            font-weight: bold;
+        /* Les zones interactives invisibles */
+        .zone {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 5;
+            transition: all 0.3s ease;
         }
 
-        /* Défense (Rouge) */
-        .defense .node.active { border-color: #ff2a5f; box-shadow: 0 0 20px rgba(255, 42, 95, 0.6); text-shadow: 0 0 5px #ff2a5f; }
-        .defense .zone-title { color: #ff2a5f; }
+        /* Effet au survol */
+        .zone:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
 
-        /* Milieu (Vert) */
-        .milieu .node.active { border-color: #2aff7b; box-shadow: 0 0 20px rgba(42, 255, 123, 0.6); text-shadow: 0 0 5px #2aff7b; }
-        .milieu .zone-title { color: #2aff7b; }
-
-        /* Attaque (Bleu) */
-        .attaque .node.active { border-color: #2a8dff; box-shadow: 0 0 20px rgba(42, 141, 255, 0.6); text-shadow: 0 0 5px #2a8dff; }
-        .attaque .zone-title { color: #2a8dff; }
+        /* Effet quand la zone est activée (elle "s'allume") */
+        .zone.active {
+            border-color: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.3);
+            /* Cela "annule" l'assombrissement pour cette zone spécifique */
+            backdrop-filter: brightness(2.5); 
+        }
 
     </style>
 </head>
@@ -132,174 +103,168 @@
         <button id="btn-back" class="back-btn" disabled>🔙 Revenir en arrière</button>
     </div>
 
-    <div id="pitch">
+    <div id="terrain-container">
+        <img src="image_0b8e47.jpg" alt="Plan Tactique" class="fond-terrain" id="image-fond">
+
         <svg id="svg-layer">
             <defs>
                 <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="white" opacity="0.6"/>
+                    <polygon points="0 0, 10 3.5, 0 7" fill="white" opacity="0.8"/>
                 </marker>
             </defs>
-            <g id="lines-group"></g> </svg>
+            <g id="lines-group"></g>
+        </svg>
 
-        <div class="zone defense">
-            <div class="node" id="secu">Culture Sécurité</div>
-            <div class="node" id="digital">Culture digital</div>
-            <div class="node" id="housse">Housseuse automatisée</div>
-            <div class="node" id="espaces">Espaces de vie</div>
-            <div class="zone-title">DÉFENSE</div>
-        </div>
+        <div class="zone" id="z-secu" style="top: 22%; left: 24%; width: 12%; height: 6%;"></div>
+        <div class="zone" id="z-digital" style="top: 32%; left: 16%; width: 9%; height: 6%;"></div>
+        <div class="zone" id="z-housseuse" style="top: 60%; left: 10%; width: 12%; height: 7%;"></div>
+        <div class="zone" id="z-espaces" style="top: 70%; left: 23%; width: 9%; height: 6%;"></div>
+        <div class="zone" id="z-briefing" style="top: 36%; left: 30%; width: 9%; height: 6%;"></div>
 
-        <div class="zone milieu">
-            <div class="node" id="rh">Digitalisation RH</div>
-            <div class="node" id="carbone">Empreinte carbone</div>
-            <div class="node" id="beebryte">Beebryte B12</div>
-            <div class="zone-title">MILIEU</div>
-        </div>
+        <div class="zone" id="z-rh" style="top: 27%; left: 45%; width: 11%; height: 5%;"></div>
+        <div class="zone" id="z-carbone" style="top: 59%; left: 39%; width: 10%; height: 6%;"></div>
+        <div class="zone" id="z-beebryte" style="top: 70%; left: 45%; width: 11%; height: 5%;"></div>
 
-        <div class="zone attaque">
-            <div class="node" id="clients">Performance Clients</div>
-            <div class="node" id="packsize">Packsize</div>
-            <div class="node" id="qualite">Qualité (HACCP)</div>
-            <div class="node" id="solidaire">Engagement solidaire</div>
-            <div class="zone-title">ATTAQUE</div>
-        </div>
+        <div class="zone" id="z-clients" style="top: 21%; left: 68%; width: 13%; height: 6%;"></div>
+        <div class="zone" id="z-packsize" style="top: 34%; left: 80%; width: 8%; height: 5%;"></div>
+        <div class="zone" id="z-apae" style="top: 57%; left: 65%; width: 10%; height: 6%;"></div>
+        <div class="zone" id="z-qualite" style="top: 60%; left: 82%; width: 8%; height: 6%;"></div>
+        <div class="zone" id="z-solidaire" style="top: 73%; left: 72%; width: 17%; height: 7%;"></div>
     </div>
 
     <script>
-        const nodes = document.querySelectorAll('.node');
+        const zones = document.querySelectorAll('.zone');
         const svgLayer = document.getElementById('svg-layer');
         const linesGroup = document.getElementById('lines-group');
-        const pitch = document.getElementById('pitch');
+        const container = document.getElementById('terrain-container');
         const btnBack = document.getElementById('btn-back');
 
-        let history = []; // Stocke l'historique des clics
-        let currentNode = null; // Le point de départ actuel de la passe
-        let isAnimating = false; // Empêche de cliquer pendant l'animation du ballon
+        let history = [];
+        let currentZone = null;
+        let isAnimating = false;
 
-        // Fonction pour obtenir le centre d'un élément par rapport au terrain
+        // Calcule le centre d'une zone pour le dessin de la flèche
         function getCenter(el) {
-            const pitchRect = pitch.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
             const elRect = el.getBoundingClientRect();
             return {
-                x: elRect.left - pitchRect.left + elRect.width / 2,
-                y: elRect.top - pitchRect.top + elRect.height / 2
+                x: elRect.left - containerRect.left + elRect.width / 2,
+                y: elRect.top - containerRect.top + elRect.height / 2
             };
         }
 
-        // Fonction pour dessiner une ligne entre deux éléments
+        // Dessine la ligne de passe
         function drawLine(start, end) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', start.x);
             line.setAttribute('y1', start.y);
             line.setAttribute('x2', end.x);
             line.setAttribute('y2', end.y);
-            line.setAttribute('stroke', 'rgba(255,255,255,0.4)');
-            line.setAttribute('stroke-width', '2');
-            line.setAttribute('stroke-dasharray', '5,5');
+            line.setAttribute('stroke', 'rgba(255,255,255,0.8)');
+            line.setAttribute('stroke-width', '3');
+            line.setAttribute('stroke-dasharray', '8,4');
             line.setAttribute('marker-end', 'url(#arrowhead)');
             linesGroup.appendChild(line);
         }
 
-        // Fonction pour animer le ballon de start à end
+        // Anime le ballon
         function animateBall(start, end, targetElement) {
             return new Promise((resolve) => {
                 isAnimating = true;
                 
-                // Création du ballon (un cercle SVG)
                 const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                ball.setAttribute('r', '6');
+                ball.setAttribute('r', '8');
                 ball.setAttribute('fill', '#ffffff');
                 ball.setAttribute('cx', start.x);
                 ball.setAttribute('cy', start.y);
+                ball.style.filter = "drop-shadow(0px 0px 5px white)";
                 svgLayer.appendChild(ball);
 
-                // Animation avec l'API Web Animations
                 const animation = ball.animate([
                     { cx: start.x, cy: start.y },
                     { cx: end.x, cy: end.y }
                 ], {
-                    duration: 800, // Temps de la passe en millisecondes
+                    duration: 1000, // 1 seconde de trajet
                     easing: 'ease-in-out',
                     fill: 'forwards'
                 });
 
                 animation.onfinish = () => {
-                    svgLayer.removeChild(ball); // On supprime le ballon une fois arrivé
-                    targetElement.classList.add('active'); // On allume l'objectif
+                    svgLayer.removeChild(ball);
+                    targetElement.classList.add('active'); // Allume la zone d'arrivée
                     isAnimating = false;
                     resolve();
                 };
             });
         }
 
-        // Gestion du clic sur un objectif
-        nodes.forEach(node => {
-            node.addEventListener('click', async () => {
-                if (isAnimating) return; // Ignore le clic si un ballon bouge
-                
-                // Sauvegarde l'état actuel pour le bouton retour
+        // Écoute les clics sur chaque zone
+        zones.forEach(zone => {
+            zone.addEventListener('click', async () => {
+                if (isAnimating || zone.classList.contains('active')) return; 
+
                 const currentState = {
-                    nodeId: node.id,
-                    htmlState: pitch.innerHTML,
-                    prevNode: currentNode
+                    zoneId: zone.id,
+                    prevZone: currentZone ? currentZone.id : null
                 };
 
-                if (!currentNode) {
-                    // Premier clic : on allume juste l'élément
-                    node.classList.add('active');
-                    currentNode = node;
+                if (!currentZone) {
+                    zone.classList.add('active');
+                    currentZone = zone;
                     history.push(currentState);
                     btnBack.disabled = false;
                 } else {
-                    // Clics suivants : si l'élément n'est pas déjà actif
-                    if (currentNode.id !== node.id) {
-                        const startCenter = getCenter(currentNode);
-                        const endCenter = getCenter(node);
-                        
-                        drawLine(startCenter, endCenter);
-                        await animateBall(startCenter, endCenter, node);
-                        
-                        currentNode = node; // Le nouvel élément devient le point de départ
-                        history.push(currentState);
-                        btnBack.disabled = false;
-                    }
+                    const startCenter = getCenter(currentZone);
+                    const endCenter = getCenter(zone);
+                    
+                    drawLine(startCenter, endCenter);
+                    await animateBall(startCenter, endCenter, zone);
+                    
+                    currentZone = zone;
+                    history.push(currentState);
+                    btnBack.disabled = false;
                 }
             });
         });
 
-        // Gestion du bouton Retour en arrière
+        // Fonctionnement du bouton retour
         btnBack.addEventListener('click', () => {
             if (isAnimating || history.length === 0) return;
             
-            history.pop(); // Retire le dernier état
+            // Retire la dernière action de l'historique
+            const lastState = history.pop();
+            const lastZone = document.getElementById(lastState.zoneId);
             
-            // Efface toutes les lignes
+            // Éteint la dernière zone allumée
+            if (lastZone) lastZone.classList.remove('active');
+            
+            // Reconstruit les lignes
             linesGroup.innerHTML = '';
             
-            // Éteint tout le monde
-            nodes.forEach(n => n.classList.remove('active'));
-
             if (history.length === 0) {
-                // S'il n'y a plus rien, on remet à zéro
-                currentNode = null;
+                currentZone = null;
                 btnBack.disabled = true;
             } else {
-                // On récupère l'état précédent
+                // Définit la nouvelle "zone actuelle"
                 const previousState = history[history.length - 1];
-                currentNode = document.getElementById(previousState.nodeId);
+                currentZone = document.getElementById(previousState.zoneId);
                 
-                // On re-simule l'allumage de l'historique
-                history.forEach(state => {
-                    const el = document.getElementById(state.nodeId);
-                    if(el) el.classList.add('active');
-                });
-
-                // On redessine les lignes précédentes (simplifié)
+                // Redessine les lignes entre les zones restantes
                 for(let i = 0; i < history.length - 1; i++) {
-                    const n1 = document.getElementById(history[i].nodeId);
-                    const n2 = document.getElementById(history[i+1].nodeId);
-                    drawLine(getCenter(n1), getCenter(n2));
+                    const z1 = document.getElementById(history[i].zoneId);
+                    const z2 = document.getElementById(history[i+1].zoneId);
+                    drawLine(getCenter(z1), getCenter(z2));
                 }
+            }
+        });
+
+        // Recalcule les lignes si on redimensionne la fenêtre
+        window.addEventListener('resize', () => {
+            linesGroup.innerHTML = '';
+            for(let i = 0; i < history.length - 1; i++) {
+                const z1 = document.getElementById(history[i].zoneId);
+                const z2 = document.getElementById(history[i+1].zoneId);
+                drawLine(getCenter(z1), getCenter(z2));
             }
         });
     </script>
