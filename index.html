@@ -126,7 +126,7 @@
     </div>
 
     <div id="terrain-container">
-        <img src="terrain.png" alt="Plan Tactique" class="fond-terrain" id="image-fond">
+        <img src="Plan tactique FM.jpg" alt="Plan Tactique FM" class="fond-terrain" id="image-fond">
 
         <svg id="svg-layer">
             <defs>
@@ -210,7 +210,7 @@
             };
         }
 
-        // Ligne de passe avec les nouvelles couleurs
+        // Ligne de passe
         function drawLine(start, end, colorHex, markerName) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', start.x);
@@ -241,7 +241,6 @@
                 if (!skipAnimation) {
                     isAnimating = true;
                     await new Promise(resolve => {
-                        // LE VRAI BALLON
                         const ball = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                         ball.textContent = '⚽';
                         ball.setAttribute('font-size', '28px');
@@ -252,10 +251,10 @@
                         ball.style.filter = "drop-shadow(0px 5px 10px rgba(0,0,0,0.5))";
                         svgLayer.appendChild(ball);
 
-                        // Animation de déplacement ET de rotation
+                        // ANIMATION MODIFIÉE : Plus de rotation, juste une ligne droite
                         const animation = ball.animate([
-                            { x: startCenter.x, y: startCenter.y, transform: `rotate(0deg)`, transformOrigin: `${startCenter.x}px ${startCenter.y}px` },
-                            { x: endCenter.x, y: endCenter.y, transform: `rotate(720deg)`, transformOrigin: `${endCenter.x}px ${endCenter.y}px` }
+                            { x: startCenter.x, y: startCenter.y },
+                            { x: endCenter.x, y: endCenter.y }
                         ], { duration: 900, easing: 'ease-in-out', fill: 'forwards' });
 
                         animation.onfinish = () => {
