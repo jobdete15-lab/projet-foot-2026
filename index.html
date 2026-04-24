@@ -68,6 +68,18 @@
             z-index: 10;
         }
 
+        /* LE NOUVEAU BALLON */
+        .ballon {
+            position: absolute;
+            font-size: 28px;
+            /* On décale de la moitié de la taille pour que le centre soit parfait */
+            left: -14px; 
+            top: -14px;
+            z-index: 20;
+            pointer-events: none;
+            filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.5));
+        }
+
         .zone {
             position: absolute;
             background-color: rgba(0, 0, 0, 0);
@@ -88,7 +100,6 @@
         .zone.active[data-marker="vert"] { border-color: #2aff7b; box-shadow: 0 0 20px rgba(42, 255, 123, 0.8), inset 0 0 15px rgba(42, 255, 123, 0.3); backdrop-filter: brightness(1.5); }
         .zone.active[data-marker="bleu"] { border-color: #2a8dff; box-shadow: 0 0 20px rgba(42, 141, 255, 0.8), inset 0 0 15px rgba(42, 141, 255, 0.3); backdrop-filter: brightness(1.5); }
 
-        /* Messages Popup */
         #toast-container {
             position: fixed;
             bottom: 30px;
@@ -115,7 +126,6 @@
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-
     </style>
 </head>
 <body>
@@ -126,7 +136,7 @@
     </div>
 
     <div id="terrain-container">
-        <img src="Plan tactique FM.jpg" alt="Plan Tactique FM" class="fond-terrain" id="image-fond">
+        <img src="Plan tactique FM.png" alt="Plan Tactique FM" class="fond-terrain" id="image-fond">
 
         <svg id="svg-layer">
             <defs>
@@ -210,7 +220,6 @@
             };
         }
 
-        // Ligne de passe
         function drawLine(start, end, colorHex, markerName) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', start.x);
@@ -241,24 +250,20 @@
                 if (!skipAnimation) {
                     isAnimating = true;
                     await new Promise(resolve => {
-                        const ball = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                        ball.textContent = '⚽';
-                        ball.setAttribute('font-size', '28px');
-                        ball.setAttribute('text-anchor', 'middle');
-                        ball.setAttribute('dominant-baseline', 'central');
-                        ball.setAttribute('x', startCenter.x);
-                        ball.setAttribute('y', startCenter.y);
-                        ball.style.filter = "drop-shadow(0px 5px 10px rgba(0,0,0,0.5))";
-                        svgLayer.appendChild(ball);
+                        // NOUVELLE MÉTHODE POUR LE BALLON : Un élément HTML normal (beaucoup plus stable)
+                        const ball = document.createElement('div');
+                        ball.className = 'ballon';
+                        ball.innerText = '⚽';
+                        container.appendChild(ball);
 
-                        // ANIMATION MODIFIÉE : Plus de rotation, juste une ligne droite
+                        // Animation de trajectoire rectiligne parfaite
                         const animation = ball.animate([
-                            { x: startCenter.x, y: startCenter.y },
-                            { x: endCenter.x, y: endCenter.y }
-                        ], { duration: 900, easing: 'ease-in-out', fill: 'forwards' });
+                            { transform: `translate(${startCenter.x}px, ${startCenter.y}px)` },
+                            { transform: `translate(${endCenter.x}px, ${endCenter.y}px)` }
+                        ], { duration: 800, easing: 'linear', fill: 'forwards' });
 
                         animation.onfinish = () => {
-                            svgLayer.removeChild(ball);
+                            if(ball.parentNode) ball.parentNode.removeChild(ball);
                             resolve();
                         };
                     });
